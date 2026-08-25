@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://seizma.com/sitemap-index.xml

@@ -1,0 +1,215 @@
+---
+export interface FeatureItem {
+  number: string;
+  title: string;
+  label: string;
+  description: string;
+}
+
+interface Props {
+  items: FeatureItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="feature-grid">
+  {
+    items.map((item) => (
+      <article class="feature-card">
+        <div class="feature-card__top">
+          <span class="feature-card__number">{item.number}</span>
+
+          <span class="feature-card__label">{item.label}</span>
+        </div>
+
+        <div class="feature-card__content">
+          <h3>{item.title}</h3>
+
+          <p>{item.description}</p>
+        </div>
+
+        <div class="feature-card__indicator" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      </article>
+    ))
+  }
+</div>
+
+<style>
+  .feature-grid {
+    display: grid;
+
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    border-top: 1px solid var(--color-border);
+
+    border-left: 1px solid var(--color-border);
+  }
+
+  .feature-card {
+    position: relative;
+
+    min-height: 390px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    padding: clamp(26px, 3vw, 40px);
+
+    border-right: 1px solid var(--color-border);
+
+    border-bottom: 1px solid var(--color-border);
+
+    background: rgba(255, 255, 255, 0.006);
+
+    overflow: hidden;
+
+    transition:
+      background var(--transition-default),
+      transform var(--transition-default);
+  }
+
+  .feature-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    right: 0;
+
+    width: 1px;
+    height: 0;
+
+    background: var(--color-accent);
+
+    transition: height 400ms ease;
+  }
+
+  .feature-card:hover {
+    background: rgba(234, 255, 0, 0.018);
+  }
+
+  .feature-card:hover::before {
+    height: 100%;
+  }
+
+  .feature-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+  }
+
+  .feature-card__number {
+    color: var(--color-accent);
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 0.15em;
+  }
+
+  .feature-card__label {
+    color: #666960;
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 0.15em;
+
+    text-transform: uppercase;
+  }
+
+  .feature-card__content {
+    position: relative;
+    z-index: 2;
+
+    margin-top: 80px;
+  }
+
+  .feature-card h3 {
+    font-size: clamp(38px, 4vw, 58px);
+
+    font-weight: 600;
+
+    line-height: 0.95;
+
+    letter-spacing: -0.055em;
+  }
+
+  .feature-card__content p {
+    max-width: 360px;
+
+    margin-top: 22px;
+
+    color: var(--color-text-muted);
+
+    font-size: 14px;
+
+    line-height: 1.7;
+  }
+
+  .feature-card__indicator {
+    margin-top: 44px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 5px;
+  }
+
+  .feature-card__indicator span {
+    width: 4px;
+    height: 4px;
+
+    border-radius: 50%;
+
+    background: #3f423b;
+
+    transition: background 250ms ease;
+  }
+
+  .feature-card__indicator span:first-child {
+    background: var(--color-accent);
+  }
+
+  .feature-card:hover .feature-card__indicator span {
+    background: var(--color-accent);
+  }
+
+  @media (max-width: 1000px) {
+    .feature-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .feature-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .feature-card {
+      min-height: 300px;
+
+      padding: 28px 22px;
+    }
+
+    .feature-card__content {
+      margin-top: 50px;
+    }
+
+    .feature-card__indicator {
+      margin-top: 36px;
+    }
+
+    .feature-card h3 {
+      font-size: clamp(42px, 13vw, 58px);
+    }
+  }
+</style>

@@ -1,0 +1,92 @@
+---
+interface Props {
+  href: string;
+  variant?: "primary" | "secondary";
+  size?: "small" | "medium";
+}
+
+const { href, variant = "primary", size = "medium" } = Astro.props;
+---
+
+<a href={href} class:list={["button", `button--${variant}`, `button--${size}`]}>
+  <slot />
+
+  <span class="button__arrow" aria-hidden="true"> ↗ </span>
+</a>
+
+<style>
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-width: 0;
+    border: 1px solid transparent;
+
+    font-weight: 600;
+    line-height: 1;
+
+    transition:
+      background-color var(--transition-default),
+      color var(--transition-default),
+      border-color var(--transition-default),
+      transform var(--transition-default);
+  }
+
+  .button:hover {
+    transform: translateY(-3px);
+  }
+
+  .button--medium {
+    min-height: 48px;
+
+    padding-inline: 22px;
+
+    border-radius: var(--radius-sm);
+
+    font-size: 14px;
+  }
+
+  .button--small {
+    min-height: 40px;
+
+    padding-inline: 18px;
+
+    border-radius: var(--radius-sm);
+
+    font-size: 13px;
+  }
+
+  .button--primary {
+    background: var(--color-accent);
+    color: #070807;
+  }
+
+  .button--primary:hover {
+    background: #ffffff;
+
+    color: #070807;
+
+    box-shadow:
+      0 0 0 1px rgba(234, 255, 0, 0.15),
+      0 12px 36px rgba(234, 255, 0, 0.16);
+  }
+
+  .button--secondary:hover {
+    border-color: var(--color-accent);
+
+    background: rgba(234, 255, 0, 0.05);
+
+    color: var(--color-accent);
+  }
+
+  .button__arrow {
+    font-size: 16px;
+
+    transition: transform var(--transition-default);
+  }
+
+  .button:hover .button__arrow {
+    transform: translate(3px, -3px);
+  }
+</style>

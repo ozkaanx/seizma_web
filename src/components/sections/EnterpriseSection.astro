@@ -1,0 +1,431 @@
+---
+import Container from "../ui/Container.astro";
+
+import { enterpriseUseCases } from "../../data/use-cases";
+---
+
+<section id="kurumsal" class="enterprise">
+  <div class="enterprise__grid-bg" aria-hidden="true"></div>
+
+  <Container>
+    <div class="enterprise__layout">
+      <div class="enterprise__content">
+        <div class="enterprise__eyebrow">
+          <span></span>
+
+          Kurumsal altyapı
+        </div>
+
+        <h2>
+          Şehirler için
+
+          <span> dayanıklı iletişim. </span>
+        </h2>
+
+        <p>
+          Seizma altyapısı, bireysel kullanımın ötesinde farklı saha noktalarını
+          ortak bir iletişim mimarisi içerisinde birleştirebilecek şekilde
+          konumlandırılabilir.
+        </p>
+
+        <a href="#iletisim" class="enterprise__cta">
+          Kurumsal çözümleri konuşalım
+
+          <span> ↗ </span>
+        </a>
+      </div>
+
+      <div class="enterprise__use-cases">
+        {
+          enterpriseUseCases.map((useCase) => (
+            <div class="use-case">
+              <span class="use-case__number">{useCase.number}</span>
+
+              <span class="use-case__title">{useCase.title}</span>
+
+              <span class="use-case__arrow" aria-hidden="true">
+                ↗
+              </span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="enterprise__network" aria-hidden="true">
+      <div class="enterprise-node enterprise-node--1">
+        <span></span>
+      </div>
+
+      <div class="enterprise-node enterprise-node--2">
+        <span></span>
+      </div>
+
+      <div class="enterprise-node enterprise-node--3">
+        <span></span>
+      </div>
+
+      <div class="enterprise-node enterprise-node--4">
+        <span></span>
+      </div>
+
+      <svg viewBox="0 0 1200 220" preserveAspectRatio="none">
+        <path d="M100 150 L380 75 L690 145 L1080 60"></path>
+
+        <path d="M380 75 L690 145"></path>
+      </svg>
+
+      <div class="enterprise__network-label">
+        DISTRIBUTED COMMUNICATION INFRASTRUCTURE
+      </div>
+    </div>
+  </Container>
+</section>
+
+<style>
+  .enterprise {
+    position: relative;
+
+    scroll-margin-top: 76px;
+
+    padding-block: var(--section-space);
+
+    border-bottom: 1px solid var(--color-border);
+
+    background: #090a08;
+
+    overflow: hidden;
+
+    isolation: isolate;
+  }
+
+  .enterprise__grid-bg {
+    position: absolute;
+    inset: 0;
+
+    z-index: -2;
+
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+
+    background-size: 64px 64px;
+
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      black 20%,
+      black 80%,
+      transparent
+    );
+  }
+
+  .enterprise__layout {
+    display: grid;
+
+    grid-template-columns:
+      minmax(0, 1.05fr)
+      minmax(380px, 0.95fr);
+
+    gap: clamp(70px, 10vw, 150px);
+
+    align-items: start;
+  }
+
+  .enterprise__eyebrow {
+    margin-bottom: 26px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: var(--color-text-muted);
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 0.16em;
+
+    text-transform: uppercase;
+  }
+
+  .enterprise__eyebrow > span {
+    width: 24px;
+    height: 1px;
+
+    background: var(--color-accent);
+  }
+
+  .enterprise h2 {
+    max-width: 720px;
+
+    font-size: clamp(54px, 6vw, 92px);
+
+    font-weight: 600;
+
+    line-height: 0.92;
+
+    letter-spacing: -0.07em;
+  }
+
+  .enterprise h2 > span {
+    display: block;
+
+    color: var(--color-accent);
+  }
+
+  .enterprise__content > p {
+    max-width: 540px;
+
+    margin-top: 32px;
+
+    color: var(--color-text-muted);
+
+    font-size: 16px;
+
+    line-height: 1.75;
+  }
+
+  .enterprise__cta {
+    margin-top: 42px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+
+    padding-bottom: 10px;
+
+    border-bottom: 1px solid rgba(234, 255, 0, 0.4);
+
+    color: var(--color-text);
+
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .enterprise__cta > span {
+    color: var(--color-accent);
+
+    transition: transform var(--transition-default);
+  }
+
+  .enterprise__cta:hover > span {
+    transform: translate(3px, -3px);
+  }
+
+  /*
+   * USE CASES
+   */
+
+  .enterprise__use-cases {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .use-case {
+    min-height: 88px;
+
+    display: grid;
+
+    grid-template-columns:
+      55px
+      minmax(0, 1fr)
+      auto;
+
+    align-items: center;
+
+    gap: 20px;
+
+    border-bottom: 1px solid var(--color-border);
+
+    transition:
+      padding-left var(--transition-default),
+      background var(--transition-default);
+  }
+
+  .use-case:hover {
+    padding-left: 12px;
+
+    background: rgba(234, 255, 0, 0.012);
+  }
+
+  .use-case__number {
+    color: #5f625a;
+
+    font-size: 9px;
+    font-weight: 800;
+
+    letter-spacing: 0.14em;
+  }
+
+  .use-case__title {
+    font-size: clamp(18px, 2vw, 24px);
+
+    font-weight: 500;
+
+    letter-spacing: -0.03em;
+  }
+
+  .use-case__arrow {
+    color: var(--color-accent);
+
+    opacity: 0;
+
+    transform: translate(-5px, 5px);
+
+    transition:
+      opacity var(--transition-default),
+      transform var(--transition-default);
+  }
+
+  .use-case:hover .use-case__arrow {
+    opacity: 1;
+
+    transform: translate(0, 0);
+  }
+
+  /*
+   * NETWORK FOOTER
+   */
+
+  .enterprise__network {
+    position: relative;
+
+    height: 220px;
+
+    margin-top: clamp(90px, 10vw, 150px);
+
+    border-top: 1px solid var(--color-border);
+
+    overflow: hidden;
+  }
+
+  .enterprise__network svg {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+  }
+
+  .enterprise__network path {
+    fill: none;
+
+    stroke: rgba(234, 255, 0, 0.24);
+
+    stroke-width: 1;
+
+    stroke-dasharray: 5 9;
+
+    vector-effect: non-scaling-stroke;
+  }
+
+  .enterprise-node {
+    position: absolute;
+
+    z-index: 2;
+
+    width: 24px;
+    height: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(234, 255, 0, 0.26);
+
+    border-radius: 50%;
+
+    background: #090a08;
+  }
+
+  .enterprise-node > span {
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: var(--color-accent);
+  }
+
+  .enterprise-node--1 {
+    top: 137px;
+    left: 7%;
+  }
+
+  .enterprise-node--2 {
+    top: 62px;
+    left: 31%;
+  }
+
+  .enterprise-node--3 {
+    top: 132px;
+    left: 57%;
+  }
+
+  .enterprise-node--4 {
+    top: 47px;
+    left: 89%;
+  }
+
+  .enterprise__network-label {
+    position: absolute;
+
+    right: 0;
+    bottom: 12px;
+
+    color: #55584f;
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 0.16em;
+  }
+
+  @media (max-width: 900px) {
+    .enterprise__layout {
+      grid-template-columns: 1fr;
+
+      gap: 80px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .enterprise h2 {
+      font-size: clamp(48px, 15vw, 68px);
+    }
+
+    .enterprise__content > p {
+      font-size: 15px;
+    }
+
+    .use-case {
+      grid-template-columns:
+        40px
+        minmax(0, 1fr)
+        auto;
+    }
+
+    .enterprise__network {
+      height: 120px;
+
+      margin-top: 80px;
+    }
+
+    .enterprise-node {
+      transform: scale(0.75);
+    }
+
+    .enterprise__network-label {
+      font-size: 6px;
+    }
+
+    .enterprise-node {
+      width: 18px;
+      height: 18px;
+    }
+    .enterprise-node > span {
+      width: 5px;
+      height: 5px;
+    }
+  }
+</style>

@@ -1,0 +1,781 @@
+---
+import type { Product } from "../../data/products";
+
+interface Props {
+  product: Product;
+}
+
+const { product } = Astro.props;
+---
+
+<article
+  class:list={[
+    "product-card",
+    `product-card--${product.variant}`,
+  ]}
+>
+  <div class="product-card__header">
+    <span class="product-card__number">
+      {product.number}
+    </span>
+
+    <span class="product-card__eyebrow">
+      {product.eyebrow}
+    </span>
+  </div>
+
+  <div class="product-card__body">
+    <div class="product-card__content">
+      <h3>
+        {product.name}
+      </h3>
+
+      <p>
+        {product.description}
+      </p>
+
+      <ul class="product-card__features">
+        {
+          product.features.map((feature) => (
+            <li>
+              <span></span>
+
+              {feature.label}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div
+      class="product-card__visual"
+      aria-hidden="true"
+    >
+      {
+        product.variant === "app" && (
+          <div class="phone">
+            <div class="phone__screen">
+              <div class="phone__status"></div>
+
+              <div class="phone__map">
+                <span class="phone__location"></span>
+
+                <span class="phone__signal phone__signal--1"></span>
+                <span class="phone__signal phone__signal--2"></span>
+              </div>
+
+              <div class="phone__panel">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {
+        product.variant === "home" && (
+          <div class="home-device">
+            <span class="home-device__logo">
+              seizma
+            </span>
+
+            <div class="home-device__signal">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        )
+      }
+
+      {
+        product.variant === "infrastructure" && (
+          <div class="booster">
+            <div class="booster__solar"></div>
+
+            <div class="booster__body">
+              <span>
+                seizma
+              </span>
+            </div>
+
+            <div class="booster__antenna booster__antenna--left"></div>
+            <div class="booster__antenna booster__antenna--right"></div>
+          </div>
+        )
+      }
+
+      <div class="product-card__orb"></div>
+    </div>
+  </div>
+</article>
+
+<style>
+  .product-card {
+    position: relative;
+
+    min-height: 620px;
+
+    padding:
+      clamp(28px, 4vw, 52px);
+
+    border:
+      1px solid
+      var(--color-border);
+
+    border-radius:
+      var(--radius-lg);
+
+    background:
+      #0d0e0c;
+
+    overflow: hidden;
+
+    isolation: isolate;
+  }
+
+  .product-card__header {
+    position: relative;
+    z-index: 3;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding-bottom: 28px;
+
+    border-bottom:
+      1px solid
+      var(--color-border);
+  }
+
+  .product-card__number {
+    color:
+      var(--color-accent);
+
+    font-size: 11px;
+    font-weight: 800;
+
+    letter-spacing: 0.15em;
+  }
+
+  .product-card__eyebrow {
+    color:
+      #72756d;
+
+    font-size: 9px;
+    font-weight: 800;
+
+    letter-spacing: 0.15em;
+
+    text-transform: uppercase;
+  }
+
+  .product-card__body {
+    position: relative;
+
+    min-height: 510px;
+
+    display: grid;
+
+    grid-template-columns:
+      minmax(280px, 0.8fr)
+      minmax(320px, 1.2fr);
+
+    align-items: center;
+
+    gap: 40px;
+  }
+
+  .product-card__content {
+    position: relative;
+    z-index: 3;
+
+    max-width: 480px;
+  }
+
+  .product-card h3 {
+    font-size:
+      clamp(
+        48px,
+        5vw,
+        76px
+      );
+
+    font-weight: 600;
+
+    line-height: 0.95;
+
+    letter-spacing: -0.065em;
+  }
+
+  .product-card__content > p {
+    max-width: 460px;
+
+    margin-top: 28px;
+
+    color:
+      var(--color-text-muted);
+
+    font-size: 16px;
+
+    line-height: 1.7;
+  }
+
+  .product-card__features {
+    margin:
+      36px 0 0;
+
+    padding: 0;
+
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    list-style: none;
+  }
+
+  .product-card__features li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding:
+      9px 13px;
+
+    border:
+      1px solid
+      var(--color-border);
+
+    border-radius:
+      100px;
+
+    color:
+      #a1a49b;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 0.1em;
+
+    text-transform: uppercase;
+  }
+
+  .product-card__features li > span {
+    width: 4px;
+    height: 4px;
+
+    border-radius: 50%;
+
+    background:
+      var(--color-accent);
+  }
+
+  /*
+   * VISUAL
+   */
+
+  .product-card__visual {
+    position: relative;
+
+    min-height: 460px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    perspective: 1000px;
+  }
+
+  .product-card__orb {
+    position: absolute;
+
+    z-index: -1;
+
+    width: 430px;
+    height: 430px;
+
+    border-radius: 50%;
+
+    background:
+      radial-gradient(
+        circle,
+        rgba(234, 255, 0, 0.12),
+        transparent 66%
+      );
+
+    filter: blur(10px);
+  }
+
+  /*
+   * PHONE
+   */
+
+  .phone {
+    position: relative;
+    z-index: 2;
+
+    width: 220px;
+    height: 445px;
+
+    padding: 8px;
+
+    border:
+      1px solid
+      rgba(255, 255, 255, 0.16);
+
+    border-radius: 38px;
+
+    background:
+      linear-gradient(
+        145deg,
+        #30332e,
+        #11120f
+      );
+
+    box-shadow:
+      0 45px 100px
+      rgba(0, 0, 0, 0.45);
+
+    transform:
+      rotate(5deg);
+  }
+
+  .phone__screen {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    border-radius: 31px;
+
+    background:
+      #e8e9e5;
+
+    overflow: hidden;
+  }
+
+  .phone__status {
+    position: absolute;
+
+    top: 12px;
+    left: 50%;
+
+    width: 64px;
+    height: 18px;
+
+    border-radius: 100px;
+
+    background: #141511;
+
+    transform:
+      translateX(-50%);
+  }
+
+  .phone__map {
+    position: absolute;
+
+    inset: 55px 12px 165px;
+
+    border-radius: 20px;
+
+    background:
+      linear-gradient(
+        135deg,
+        #d8dad4,
+        #f2f3ef
+      );
+  }
+
+  .phone__map::before,
+  .phone__map::after {
+    content: "";
+
+    position: absolute;
+
+    background:
+      rgba(40, 43, 37, 0.12);
+  }
+
+  .phone__map::before {
+    top: 35%;
+    left: 0;
+
+    width: 100%;
+    height: 1px;
+
+    transform:
+      rotate(18deg);
+  }
+
+  .phone__map::after {
+    top: 0;
+    left: 55%;
+
+    width: 1px;
+    height: 100%;
+
+    transform:
+      rotate(-12deg);
+  }
+
+  .phone__location {
+    position: absolute;
+
+    top: 45%;
+    left: 48%;
+
+    width: 13px;
+    height: 13px;
+
+    border-radius: 50%;
+
+    background:
+      var(--color-accent);
+
+    box-shadow:
+      0 0 0 7px
+      rgba(234, 255, 0, 0.22);
+  }
+
+  .phone__signal {
+    position: absolute;
+
+    border:
+      1px solid
+      rgba(80, 90, 40, 0.18);
+
+    border-radius: 50%;
+  }
+
+  .phone__signal--1 {
+    inset: 30%;
+  }
+
+  .phone__signal--2 {
+    inset: 18%;
+  }
+
+  .phone__panel {
+    position: absolute;
+
+    right: 12px;
+    bottom: 16px;
+    left: 12px;
+
+    height: 128px;
+
+    padding: 18px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    border-radius: 22px;
+
+    background:
+      #ffffff;
+  }
+
+  .phone__panel span {
+    height: 10px;
+
+    border-radius: 100px;
+
+    background:
+      #dcddd8;
+  }
+
+  .phone__panel span:nth-child(2) {
+    width: 72%;
+  }
+
+  .phone__panel span:nth-child(3) {
+    width: 46%;
+  }
+
+  /*
+   * HOME BOOSTER
+   */
+
+  .home-device {
+    position: relative;
+    z-index: 2;
+
+    width: 290px;
+    height: 340px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius:
+      58px;
+
+    background:
+      linear-gradient(
+        145deg,
+        #f7f7f5,
+        #cacbc7
+      );
+
+    color:
+      #42443f;
+
+    box-shadow:
+      0 45px 100px
+      rgba(0, 0, 0, 0.4);
+
+    transform:
+      rotate(-5deg);
+  }
+
+  .home-device__logo {
+    font-size: 30px;
+
+    letter-spacing:
+      -0.05em;
+  }
+
+  .home-device__signal {
+    position: absolute;
+
+    right: 30px;
+    bottom: 30px;
+
+    display: flex;
+    align-items: end;
+    gap: 4px;
+  }
+
+  .home-device__signal span {
+    width: 4px;
+
+    background:
+      var(--color-accent);
+  }
+
+  .home-device__signal span:nth-child(1) {
+    height: 8px;
+  }
+
+  .home-device__signal span:nth-child(2) {
+    height: 14px;
+  }
+
+  .home-device__signal span:nth-child(3) {
+    height: 21px;
+  }
+
+  /*
+   * BOOSTER
+   */
+
+  .booster {
+    position: relative;
+    z-index: 2;
+
+    width: 330px;
+    height: 380px;
+  }
+
+  .booster__body {
+    position: absolute;
+
+    top: 55px;
+    left: 50%;
+
+    width: 220px;
+    height: 285px;
+
+    display: flex;
+    justify-content: center;
+
+    padding-top: 55px;
+
+    border-radius:
+      35px;
+
+    background:
+      linear-gradient(
+        145deg,
+        #f2f2ef,
+        #bfc1bb
+      );
+
+    color:
+      #50524c;
+
+    box-shadow:
+      0 40px 90px
+      rgba(0, 0, 0, 0.45);
+
+    transform:
+      translateX(-50%);
+  }
+
+  .booster__body span {
+    font-size: 24px;
+
+    letter-spacing:
+      -0.05em;
+  }
+
+  .booster__solar {
+    position: absolute;
+
+    z-index: 3;
+
+    right: 62px;
+    bottom: 45px;
+
+    width: 110px;
+    height: 100px;
+
+    border-radius:
+      12px;
+
+    background:
+      repeating-linear-gradient(
+        90deg,
+        #303936 0 8px,
+        #49534f 8px 10px
+      );
+
+    transform:
+      rotate(-4deg);
+  }
+
+  .booster__antenna {
+    position: absolute;
+
+    z-index: 1;
+
+    top: 10px;
+
+    width: 7px;
+    height: 190px;
+
+    border-radius:
+      10px;
+
+    background:
+      #e4e4df;
+
+    transform-origin:
+      bottom;
+  }
+
+  .booster__antenna--left {
+    left: 55px;
+
+    transform:
+      rotate(-13deg);
+  }
+
+  .booster__antenna--right {
+    right: 55px;
+
+    transform:
+      rotate(13deg);
+  }
+
+  /*
+   * LARGE VARIANT
+   */
+
+  .product-card--infrastructure {
+    min-height: 680px;
+  }
+
+  /*
+   * RESPONSIVE
+   */
+
+  @media (max-width: 900px) {
+    .product-card__body {
+      grid-template-columns: 1fr;
+
+      padding-top: 60px;
+    }
+
+    .product-card__visual {
+      min-height: 420px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .product-card {
+      min-height: auto;
+
+      padding:
+        26px 20px;
+    }
+
+    .product-card__body {
+      gap: 30px;
+    }
+
+    .product-card h3 {
+      font-size:
+        clamp(
+          44px,
+          14vw,
+          62px
+        );
+    }
+
+    .product-card__content > p {
+      font-size: 15px;
+    }
+
+    .product-card__visual {
+      min-height: 380px;
+
+      transform:
+        scale(0.86);
+    }
+  }
+
+  @media (max-width: 640px) {
+  .product-card {
+    min-height: auto;
+
+    padding:
+      26px 20px;
+  }
+
+  .product-card__body {
+    grid-template-columns: 1fr;
+
+    gap: 36px;
+
+    padding-top: 42px;
+  }
+
+  .product-card__visual {
+    width: 100%;
+    min-height: 350px;
+
+    overflow: hidden;
+  }
+
+  .phone {
+    width: 190px;
+    height: 385px;
+  }
+
+  .home-device {
+    width: 240px;
+    height: 285px;
+  }
+
+  .booster {
+    width: 280px;
+    height: 340px;
+  }
+}
+</style>

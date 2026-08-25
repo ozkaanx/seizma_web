@@ -1,17 +1,34 @@
 ---
-
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/layout/Header.astro";
+import NetworkSection from "../components/sections/NetworkSection.astro";
+import Hero from "../components/sections/Hero.astro";
+import ProblemSection from "../components/sections/ProblemSection.astro";
+import Ecosystem from "../components/sections/Ecosystem.astro";
+import DisasterTimeline from "../components/sections/DisasterTimeline.astro";
+import OfflineSection from "../components/sections/OfflineSection.astro";
+import CapabilitiesSection from "../components/sections/CapabilitiesSection.astro";
+import EnterpriseSection from "../components/sections/EnterpriseSection.astro";
+import FinalCTA from "../components/sections/FinalCTA.astro";
+import Footer from "../components/layout/Footer.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout
+  title="Seizma | Yeni Nesil Afet İletişim Teknolojileri"
+  description="Seizma; afet öncesi, anı ve sonrasında iletişimin devam etmesini destekleyen mobil uygulama, Home Booster ve saha iletişim altyapısından oluşan teknoloji ekosistemidir."
+>
+  <main>
+    <Hero />
+    <ProblemSection />
+    <Ecosystem />
+    <DisasterTimeline />
+    <NetworkSection />
+    <OfflineSection />
+    <CapabilitiesSection />
+    <EnterpriseSection />
+    <FinalCTA />
+  </main>
+  <Footer />
+
+  <Header />
+</BaseLayout>
