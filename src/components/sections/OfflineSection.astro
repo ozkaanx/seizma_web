@@ -1,0 +1,777 @@
+---
+import Container from "../ui/Container.astro";
+
+import { systemStatuses } from "../../data/system-status";
+---
+
+<section id="dayanikli-iletisim" class="offline" data-offline-section>
+  <Container>
+    <header class="offline__header">
+      <div class="offline__eyebrow">
+        <span></span>
+
+        Dayanıklı iletişim
+      </div>
+
+      <div class="offline__header-layout">
+        <h2>
+          Her şey
+
+          <span> durduğunda. </span>
+        </h2>
+
+        <p>
+          Afet anında geleneksel altyapılar aynı anda etkilenebilir. Seizma
+          yaklaşımı, iletişimi yalnızca tek bir sisteme bağımlı bırakmamak
+          üzerine kuruludur.
+        </p>
+      </div>
+    </header>
+
+    <div class="offline__panel">
+      <div class="offline__systems">
+        {
+          systemStatuses.map((system, index) => (
+            <article
+              class="system-row"
+              data-system-row
+              style={`--delay: ${index * 140}ms`}
+            >
+              <div class="system-row__number">{system.number}</div>
+
+              <div class="system-row__content">
+                <h3>{system.name}</h3>
+
+                <p>{system.description}</p>
+              </div>
+
+              <div class="system-row__status">
+                <span class="system-row__signal" />
+
+                <span class="system-row__label">{system.label}</span>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+
+      <div class="offline__divider" aria-hidden="true">
+        <span></span>
+
+        ALTERNATIVE NETWORK
+      </div>
+
+      <article class="seizma-status" data-seizma-status>
+        <div class="seizma-status__background">SEIZMA</div>
+
+        <div class="seizma-status__top">
+          <span> 04 </span>
+
+          <span class="seizma-status__protocol"> PLAI NETWORK </span>
+        </div>
+
+        <div class="seizma-status__content">
+          <div>
+            <span class="seizma-status__eyebrow"> Alternatif iletişim </span>
+
+            <h3>Seizma</h3>
+
+            <p>
+              Geleneksel iletişim altyapılarının etkilendiği durumlarda
+              alternatif bağlantı katmanlarıyla iletişimin sürdürülebilmesini
+              hedefler.
+            </p>
+          </div>
+
+          <div class="seizma-status__state">
+            <div class="seizma-status__pulse">
+              <span></span>
+            </div>
+
+            <strong> ACTIVE </strong>
+
+            <span> NETWORK READY </span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </Container>
+</section>
+
+<script>
+  const section = document.querySelector<HTMLElement>("[data-offline-section]");
+
+  if (section) {
+    const systemRows =
+      section.querySelectorAll<HTMLElement>("[data-system-row]");
+
+    const seizmaStatus = section.querySelector<HTMLElement>(
+      "[data-seizma-status]",
+    );
+
+    const activateSection = () => {
+      systemRows.forEach((row) => {
+        row.classList.add("is-offline");
+      });
+
+      seizmaStatus?.classList.add("is-active");
+    };
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      activateSection();
+    } else {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry?.isIntersecting) {
+            return;
+          }
+
+          activateSection();
+
+          observer.disconnect();
+        },
+        {
+          threshold: 0.35,
+        },
+      );
+
+      observer.observe(section);
+    }
+  }
+</script>
+
+<style>
+  .offline {
+    position: relative;
+    padding-block: var(--section-space);
+
+    border-bottom: 1px solid var(--color-border);
+
+    background: #080907;
+
+    overflow: hidden;
+  }
+
+  /*
+   * HEADER
+   */
+
+  .offline__header {
+    margin-bottom: clamp(70px, 9vw, 120px);
+  }
+
+  .offline__eyebrow {
+    margin-bottom: 26px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: var(--color-text-muted);
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 0.16em;
+
+    text-transform: uppercase;
+  }
+
+  .offline__eyebrow > span {
+    width: 24px;
+    height: 1px;
+
+    background: var(--color-accent);
+  }
+
+  .offline__header-layout {
+    display: grid;
+
+    grid-template-columns:
+      minmax(0, 1.25fr)
+      minmax(300px, 0.75fr);
+
+    align-items: end;
+
+    gap: 60px;
+  }
+
+  .offline h2 {
+    max-width: 850px;
+
+    font-size: clamp(54px, 6.2vw, 96px);
+
+    font-weight: 600;
+
+    line-height: 0.92;
+
+    letter-spacing: -0.07em;
+  }
+
+  .offline h2 span {
+    display: block;
+
+    color: var(--color-accent);
+  }
+
+  .offline__header-layout > p {
+    max-width: 430px;
+
+    color: var(--color-text-muted);
+
+    font-size: 16px;
+
+    line-height: 1.75;
+  }
+
+  /*
+   * MAIN PANEL
+   */
+
+  .offline__panel {
+    border: 1px solid var(--color-border);
+
+    border-radius: var(--radius-lg);
+
+    background: #0a0b09;
+
+    overflow: hidden;
+  }
+
+  /*
+   * SYSTEM ROWS
+   */
+
+  .system-row {
+    position: relative;
+
+    min-height: 180px;
+
+    display: grid;
+
+    grid-template-columns:
+      70px
+      minmax(0, 1fr)
+      150px;
+
+    align-items: center;
+
+    gap: 30px;
+
+    padding: 32px clamp(26px, 4vw, 48px);
+
+    border-bottom: 1px solid var(--color-border);
+
+    transition:
+      opacity 500ms ease var(--delay),
+      background 500ms ease var(--delay);
+  }
+
+  .system-row__number {
+    color: #55584f;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 0.14em;
+
+    transition: color 400ms ease var(--delay);
+  }
+
+  .system-row__content h3 {
+    color: var(--color-text);
+
+    font-size: clamp(32px, 3.5vw, 50px);
+
+    font-weight: 600;
+
+    line-height: 1;
+
+    letter-spacing: -0.05em;
+
+    transition: color 400ms ease var(--delay);
+  }
+
+  .system-row__content p {
+    max-width: 600px;
+
+    margin-top: 12px;
+
+    color: #74776f;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+  }
+
+  .system-row__status {
+    justify-self: end;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .system-row__signal {
+    position: relative;
+
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #3d4039;
+
+    transition:
+      background 400ms ease var(--delay),
+      box-shadow 400ms ease var(--delay);
+  }
+
+  .system-row__label {
+    min-width: 60px;
+
+    color: #55584f;
+
+    font-size: 11px;
+    font-weight: 900;
+
+    letter-spacing: 0.16em;
+
+    transition: color 400ms ease var(--delay);
+  }
+
+  /*
+   * OFFLINE STATE
+   */
+
+  .system-row.is-offline {
+    background: rgba(255, 255, 255, 0.008);
+
+    opacity: 0.55;
+  }
+
+  .system-row.is-offline .system-row__number {
+    color: #3f423b;
+  }
+
+  .system-row.is-offline .system-row__content h3 {
+    color: #72756d;
+  }
+
+  .system-row.is-offline .system-row__signal {
+    background: #55584f;
+
+    box-shadow: none;
+  }
+
+  .system-row.is-offline .system-row__label {
+    color: #777a72;
+  }
+
+  /*
+   * DIVIDER
+   */
+
+  .offline__divider {
+    position: relative;
+
+    height: 80px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+
+    color: #55584f;
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 0.18em;
+
+    background: #070807;
+  }
+
+  .offline__divider::before,
+  .offline__divider::after {
+    content: "";
+
+    width: 80px;
+    height: 1px;
+
+    background: var(--color-border);
+  }
+
+  .offline__divider > span {
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: var(--color-accent);
+
+    box-shadow: 0 0 15px rgba(234, 255, 0, 0.35);
+  }
+
+  /*
+   * SEIZMA ACTIVE
+   */
+
+  .seizma-status {
+    position: relative;
+
+    min-height: 430px;
+
+    padding: clamp(32px, 5vw, 58px);
+
+    background:
+      radial-gradient(
+        circle at 85% 55%,
+        rgba(234, 255, 0, 0.09),
+        transparent 30%
+      ),
+      #0d0f0a;
+
+    overflow: hidden;
+  }
+
+  .seizma-status::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+
+    background-size: 48px 48px;
+
+    opacity: 0;
+
+    transition: opacity 800ms ease 450ms;
+  }
+
+  .seizma-status__background {
+    position: absolute;
+
+    right: -20px;
+    bottom: -40px;
+
+    color: rgba(255, 255, 255, 0.018);
+
+    font-size: clamp(120px, 18vw, 280px);
+
+    font-weight: 800;
+
+    line-height: 0.8;
+
+    letter-spacing: -0.08em;
+
+    user-select: none;
+  }
+
+  .seizma-status__top {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding-bottom: 30px;
+
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .seizma-status__top > span:first-child {
+    color: var(--color-accent);
+
+    font-size: 11px;
+    font-weight: 800;
+
+    letter-spacing: 0.15em;
+  }
+
+  .seizma-status__protocol {
+    color: #62655d;
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 0.16em;
+  }
+
+  .seizma-status__content {
+    position: relative;
+    z-index: 2;
+
+    min-height: 300px;
+
+    display: grid;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      260px;
+
+    align-items: center;
+
+    gap: 60px;
+  }
+
+  .seizma-status__eyebrow {
+    color: #6e7169;
+
+    font-size: 9px;
+    font-weight: 800;
+
+    letter-spacing: 0.15em;
+
+    text-transform: uppercase;
+  }
+
+  .seizma-status h3 {
+    margin-top: 12px;
+
+    font-size: clamp(54px, 6vw, 92px);
+
+    font-weight: 600;
+
+    line-height: 0.9;
+
+    letter-spacing: -0.07em;
+  }
+
+  .seizma-status__content > div:first-child > p {
+    max-width: 560px;
+
+    margin-top: 26px;
+
+    color: var(--color-text-muted);
+
+    font-size: 15px;
+
+    line-height: 1.7;
+  }
+
+  .seizma-status__state {
+    justify-self: end;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    text-align: center;
+
+    opacity: 0.25;
+
+    transform: scale(0.92);
+
+    transition:
+      opacity 600ms ease 500ms,
+      transform 600ms ease 500ms;
+  }
+
+  .seizma-status__pulse {
+    position: relative;
+
+    width: 86px;
+    height: 86px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 22px;
+
+    border: 1px solid rgba(234, 255, 0, 0.25);
+
+    border-radius: 50%;
+  }
+
+  .seizma-status__pulse > span {
+    width: 15px;
+    height: 15px;
+
+    border-radius: 50%;
+
+    background: var(--color-accent);
+
+    box-shadow: 0 0 35px rgba(234, 255, 0, 0.35);
+  }
+
+  .seizma-status__pulse::after {
+    content: "";
+
+    position: absolute;
+
+    inset: -18px;
+
+    border: 1px solid rgba(234, 255, 0, 0.1);
+
+    border-radius: 50%;
+
+    opacity: 0;
+  }
+
+  .seizma-status__state strong {
+    color: var(--color-accent);
+
+    font-size: clamp(30px, 4vw, 46px);
+
+    font-weight: 700;
+
+    letter-spacing: -0.04em;
+  }
+
+  .seizma-status__state > span:last-child {
+    margin-top: 8px;
+
+    color: #686b63;
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 0.16em;
+  }
+
+  /*
+   * ACTIVE STATE
+   */
+
+  .seizma-status.is-active::before {
+    opacity: 1;
+  }
+
+  .seizma-status.is-active .seizma-status__state {
+    opacity: 1;
+
+    transform: scale(1);
+  }
+
+  .seizma-status.is-active .seizma-status__pulse::after {
+    animation: active-pulse 2.8s ease-out 600ms infinite;
+  }
+
+  @keyframes active-pulse {
+    0% {
+      opacity: 0.8;
+
+      transform: scale(0.6);
+    }
+
+    100% {
+      opacity: 0;
+
+      transform: scale(1.5);
+    }
+  }
+
+  /*
+   * RESPONSIVE
+   */
+
+  @media (max-width: 900px) {
+    .offline__header-layout {
+      grid-template-columns: 1fr;
+
+      gap: 34px;
+    }
+
+    .offline__header-layout > p {
+      max-width: 650px;
+    }
+
+    .system-row {
+      grid-template-columns:
+        50px
+        minmax(0, 1fr)
+        100px;
+    }
+
+    .seizma-status__content {
+      grid-template-columns: 1fr;
+
+      padding-top: 60px;
+    }
+
+    .seizma-status__state {
+      justify-self: start;
+
+      align-items: flex-start;
+
+      text-align: left;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .system-row__content h3 {
+      font-size: 30px;
+    }
+
+    .system-row__label {
+      min-width: auto;
+
+      font-size: 9px;
+    }
+
+    .seizma-status__state {
+      width: 100%;
+
+      align-items: flex-start;
+    }
+
+    .offline h2 {
+      font-size: clamp(48px, 15vw, 68px);
+    }
+
+    .system-row {
+      min-height: auto;
+
+      grid-template-columns:
+        1fr
+        auto;
+
+      gap: 24px;
+
+      padding: 30px 22px;
+    }
+
+    .system-row__number {
+      display: none;
+    }
+
+    .system-row__content p {
+      max-width: 90%;
+
+      font-size: 12px;
+    }
+
+    .system-row__status {
+      grid-column: 2;
+      grid-row: 1;
+
+      align-self: start;
+    }
+
+    .seizma-status {
+      min-height: 520px;
+
+      padding: 28px 22px;
+    }
+
+    .seizma-status__content {
+      gap: 50px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .system-row,
+    .system-row *,
+    .seizma-status,
+    .seizma-status * {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+</style>

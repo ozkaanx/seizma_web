@@ -1,0 +1,93 @@
+---
+import Container from "../ui/Container.astro";
+import FeatureGrid from "../ui/FeatureGrid.astro";
+
+import { technicalFeatures } from "../../data/technical-features";
+import SectionHeader from "../ui/SectionHeader.astro";
+---
+
+<section id="yetenekler" class="capabilities">
+  <Container>
+    <SectionHeader
+      eyebrow="Teknik Yetkinlikler"
+      title="Sahada çalışmak"
+      highlight="için tasarlandı."
+      description="Seizma ekosistemi yalnızca yazılım katmanından oluşmaz. Donanım, enerji, bağlantı ve saha iletişimi birlikte düşünülerek bütüncül bir altyapı yaklaşımı oluşturur."
+    />
+
+    <FeatureGrid items={technicalFeatures} />
+  </Container>
+</section>
+
+<style>
+  .capabilities {
+    position: relative;
+
+    padding-block: var(--section-space);
+
+    border-bottom: 1px solid var(--color-border);
+
+    background: #060706;
+  }
+
+  .capabilities__header {
+    margin-bottom: clamp(70px, 9vw, 120px);
+
+    display: grid;
+
+    grid-template-columns:
+      minmax(0, 1.25fr)
+      minmax(300px, 0.75fr);
+
+    align-items: end;
+
+    gap: 60px;
+  }
+
+  .capabilities__eyebrow {
+    margin-bottom: 26px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    color: var(--color-text-muted);
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 0.16em;
+
+    text-transform: uppercase;
+  }
+
+  .capabilities__eyebrow > span {
+    width: 24px;
+    height: 1px;
+
+    background: var(--color-accent);
+  }
+
+  @media (max-width: 900px) {
+    .capabilities__header {
+      grid-template-columns: 1fr;
+
+      gap: 34px;
+    }
+
+    .capabilities__header > p {
+      max-width: 650px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .capabilities__header {
+      margin-bottom: 60px;
+    }
+
+    .capabilities h2 {
+      font-size: clamp(48px, 15vw, 68px);
+    }
+  }
+</style>

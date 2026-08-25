@@ -1,0 +1,55 @@
+---
+import Container from "../ui/Container.astro";
+import NetworkExplorer from "../network/NetworkExplorer";
+import SectionHeader from "../ui/SectionHeader.astro";
+
+---
+
+<section id="nasil-calisir" class="network-section">
+  <Container>
+    <SectionHeader
+      eyebrow="Network Architecture"
+      title="Seizma nasıl"
+      highlight="çalışıyor?"
+      description="Seizma ekosistemi, farklı bağlantı katmanlarını tek bir iletişim mimarisi içerisinde bir araya getirerek cihazlar ve saha altyapısı arasında bağlantı kurulmasını hedefler."
+    />
+
+    <NetworkExplorer client:visible />
+  </Container>
+</section>
+
+<style>
+  .network-section {
+    position: relative;
+
+    scroll-margin-top: 76px;
+
+    padding-block: var(--section-space);
+
+    border-bottom: 1px solid var(--color-border);
+
+    background: #060706;
+  }
+
+  @media (max-width: 900px) {
+    .network-section__header {
+      grid-template-columns: 1fr;
+
+      gap: 34px;
+    }
+
+    .network-section__header > p {
+      max-width: 650px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .network-section__header {
+      margin-bottom: 60px;
+    }
+
+    .network-section h2 {
+      font-size: clamp(48px, 15vw, 68px);
+    }
+  }
+</style>

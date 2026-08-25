@@ -1,0 +1,94 @@
+---
+import "@fontsource-variable/manrope";
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/500.css";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const {
+  title = "Seizma",
+  description = "Afet öncesi, anı ve sonrasında iletişimi sürdüren yeni nesil teknoloji ekosistemi.",
+  canonical,
+
+  ogImage = "/og/seizma-og.jpg",
+
+  noindex = false,
+} = Astro.props;
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Seizma",
+  url: Astro.site?.toString(),
+};
+
+const canonicalURL =
+  canonical ?? new URL(Astro.url.pathname, Astro.site).toString();
+
+const ogImageURL = new URL(ogImage, Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>
+      {title}
+    </title>
+
+    <meta name="description" content={description} />
+
+    <link rel="canonical" href={canonicalURL} />
+
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <!-- Open Graph -->
+
+    <meta property="og:type" content="website" />
+
+    <meta property="og:site_name" content="Seizma" />
+
+    <meta property="og:title" content={title} />
+
+    <meta property="og:description" content={description} />
+
+    <meta property="og:url" content={canonicalURL} />
+
+    <meta property="og:image" content={ogImageURL} />
+
+    <meta property="og:locale" content="tr_TR" />
+
+    <!-- Twitter / X -->
+
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <meta name="twitter:title" content={title} />
+
+    <meta name="twitter:description" content={description} />
+
+    <meta name="twitter:image" content={ogImageURL} />
+
+    <!-- Theme -->
+
+    <meta name="theme-color" content="#070807" />
+
+    <!-- Icons -->
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(organizationSchema)}
+    />
+  </head>
+
+  <body>
+    <slot />
+  </body>
+</html>
