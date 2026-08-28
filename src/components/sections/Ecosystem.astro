@@ -15,7 +15,7 @@ import { products } from "../../data/products";
   description="Seizma App, Home Booster ve saha altyapısı birbirinden bağımsız ürünler olarak değil, aynı iletişim ekosisteminin parçaları olarak çalışmak üzere tasarlanır."
 />
 
-    <div class="ecosystem__products">
+    <div id="urunler" class="ecosystem__products">
       {products.map((product) => <ProductCard product={product} />)}
     </div>
   </Container>
@@ -34,13 +34,14 @@ import { products } from "../../data/products";
     border-bottom: 1px solid var(--color-border);
   }
 
-  .ecosystem__products {
-    display: flex;
-    flex-direction: column;
+ .ecosystem__products {
+  scroll-margin-top: 100px;
 
-    gap: 24px;
-  }
+  display: flex;
+  flex-direction: column;
 
+  gap: 24px;
+}
   @media (max-width: 900px) {
     .ecosystem__header {
       grid-template-columns: 1fr;
