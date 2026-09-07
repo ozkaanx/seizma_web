@@ -17,7 +17,8 @@ import Footer from "../components/layout/Footer.astro";
   title="Seizma | Yeni Nesil Afet İletişim Teknolojileri"
   description="Seizma; afet öncesi, anı ve sonrasında iletişimin devam etmesini destekleyen mobil uygulama, Home Booster ve saha iletişim altyapısından oluşan teknoloji ekosistemidir."
 >
-  <main>
+  <Header />
+  <main id="main-content" tabindex="-1">
     <Hero />
     <ProblemSection />
     <Ecosystem />
@@ -29,6 +30,4 @@ import Footer from "../components/layout/Footer.astro";
     <FinalCTA />
   </main>
   <Footer />
-
-  <Header />
 </BaseLayout>

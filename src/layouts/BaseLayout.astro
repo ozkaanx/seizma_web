@@ -7,6 +7,9 @@ import "../styles/global.css";
 interface Props {
   title?: string;
   description?: string;
+  canonical?: string;
+  ogImage?: string;
+  noindex?: boolean;
 }
 const {
   title = "Seizma",
@@ -89,6 +92,7 @@ const ogImageURL = new URL(ogImage, Astro.site).toString();
   </head>
 
   <body>
+    <a class="skip-link" href="#main-content">İçeriğe geç</a>
     <slot />
   </body>
 </html>
