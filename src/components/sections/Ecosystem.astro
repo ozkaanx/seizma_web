@@ -10,9 +10,9 @@ import { products } from "../../data/products";
   <Container>
     <SectionHeader
   eyebrow="Seizma Ekosistemi"
-  title="Tek bir cihaz değil."
+  title="Üç ürün."
   highlight="Bir iletişim ağı."
-  description="Seizma App, Home Booster ve saha altyapısı birbirinden bağımsız ürünler olarak değil, aynı iletişim ekosisteminin parçaları olarak çalışmak üzere tasarlanır."
+  description="Telefonunuzdan evinize, evinizden sahaya uzanan ortak bir iletişim yaklaşımı."
 />
 
     <div id="urunler" class="ecosystem__products">
@@ -34,14 +34,13 @@ import { products } from "../../data/products";
     border-bottom: 1px solid var(--color-border);
   }
 
- .ecosystem__products {
-  scroll-margin-top: 100px;
+  .ecosystem__products {
+    display: flex;
+    flex-direction: column;
 
-  display: flex;
-  flex-direction: column;
+    gap: 24px;
+  }
 
-  gap: 24px;
-}
   @media (max-width: 900px) {
     .ecosystem__header {
       grid-template-columns: 1fr;
@@ -63,4 +62,8 @@ import { products } from "../../data/products";
       font-size: clamp(48px, 15vw, 68px);
     }
   }
+
+.ecosystem__products { display:grid; grid-template-columns:minmax(0,1fr); gap:20px; }
+@media (max-width:900px) { .ecosystem__products { grid-template-columns:1fr; } }
+
 </style>

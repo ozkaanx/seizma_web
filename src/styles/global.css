@@ -90,7 +90,7 @@
    * SECTION
    */
 
-  --section-space: clamp(100px, 13vw, 190px);
+  --section-space: clamp(48px, 6vw, 88px);
 }
 
 *,

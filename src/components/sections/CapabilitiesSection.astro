@@ -12,7 +12,7 @@ import SectionHeader from "../ui/SectionHeader.astro";
       eyebrow="Teknik Yetkinlikler"
       title="Sahada çalışmak"
       highlight="için tasarlandı."
-      description="Seizma ekosistemi yalnızca yazılım katmanından oluşmaz. Donanım, enerji, bağlantı ve saha iletişimi birlikte düşünülerek bütüncül bir altyapı yaklaşımı oluşturur."
+      description="Donanım, enerji ve bağlantı katmanları; sahada iletişimi desteklemek için birlikte tasarlanır."
     />
 
     <FeatureGrid items={technicalFeatures} />
@@ -21,73 +21,48 @@ import SectionHeader from "../ui/SectionHeader.astro";
 
 <style>
   .capabilities {
-    position: relative;
-
-    padding-block: var(--section-space);
-
+    padding-block: clamp(48px, 6vw, 80px);
+    scroll-margin-top: 96px;
     border-bottom: 1px solid var(--color-border);
-
-    background: #060706;
+    background: #080a07;
   }
-
-  .capabilities__header {
-    margin-bottom: clamp(70px, 9vw, 120px);
-
-    display: grid;
-
-    grid-template-columns:
-      minmax(0, 1.25fr)
-      minmax(300px, 0.75fr);
-
-    align-items: end;
-
-    gap: 60px;
+  .capabilities :global(.section-header) { margin-bottom:28px; gap:24px; }
+  .capabilities :global(.section-header h2) {
+    font-size:clamp(32px,4.3vw,52px);
+    line-height:1.08;
+    letter-spacing:-.045em;
   }
-
-  .capabilities__eyebrow {
-    margin-bottom: 26px;
-
-    display: flex;
-    align-items: center;
-
-    gap: 10px;
-
-    color: var(--color-text-muted);
-
-    font-size: 10px;
-    font-weight: 800;
-
-    letter-spacing: 0.16em;
-
-    text-transform: uppercase;
+  .capabilities :global(.section-header__eyebrow) { margin-bottom:14px; }
+  .capabilities :global(.section-header__description) { font-size:15px; line-height:1.7; }
+  .capabilities :global(.feature-grid) {
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+    border:0;
   }
-
-  .capabilities__eyebrow > span {
-    width: 24px;
-    height: 1px;
-
-    background: var(--color-accent);
+  .capabilities :global(.feature-card) {
+    min-height:0;
+    padding:24px;
+    justify-content:flex-start;
+    border:1px solid var(--color-border);
+    border-radius:14px;
+    background:#11130f;
   }
-
-  @media (max-width: 900px) {
-    .capabilities__header {
-      grid-template-columns: 1fr;
-
-      gap: 34px;
-    }
-
-    .capabilities__header > p {
-      max-width: 650px;
-    }
+  .capabilities :global(.feature-card__top) { gap:12px; }
+  .capabilities :global(.feature-card__label) { color:#a4a89b; font-size:10px; letter-spacing:.08em; }
+  .capabilities :global(.feature-card__number) { font-size:11px; }
+  .capabilities :global(.feature-card__content) { margin-top:20px; }
+  .capabilities :global(.feature-card h3) { font-size:30px; line-height:1.1; letter-spacing:-.035em; }
+  .capabilities :global(.feature-card__content p) { margin-top:12px; font-size:14px; line-height:1.65; max-width:none; }
+  .capabilities :global(.feature-card__indicator) { display:none; }
+  .capabilities :global(.feature-card::before) { display:none; }
+  @media (max-width:1000px) {
+    .capabilities :global(.feature-grid) { grid-template-columns:repeat(2,minmax(0,1fr)); }
   }
-
-  @media (max-width: 640px) {
-    .capabilities__header {
-      margin-bottom: 60px;
-    }
-
-    .capabilities h2 {
-      font-size: clamp(48px, 15vw, 68px);
-    }
+  @media (max-width:640px) {
+    .capabilities :global(.section-header) { gap:16px; margin-bottom:24px; }
+    .capabilities :global(.feature-grid) { grid-template-columns:minmax(0,1fr); gap:10px; }
+    .capabilities :global(.feature-card) { padding:20px; }
+    .capabilities :global(.feature-card__content) { margin-top:16px; }
+    .capabilities :global(.feature-card h3) { font-size:26px; }
   }
 </style>

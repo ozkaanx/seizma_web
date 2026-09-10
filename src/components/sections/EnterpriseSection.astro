@@ -23,9 +23,8 @@ import { enterpriseUseCases } from "../../data/use-cases";
         </h2>
 
         <p>
-          Seizma altyapısı, bireysel kullanımın ötesinde farklı saha noktalarını
-          ortak bir iletişim mimarisi içerisinde birleştirebilecek şekilde
-          konumlandırılabilir.
+          Belediyeler, kampüsler ve kritik tesisler için alternatif iletişim
+          altyapısı. Kurumunuzun ihtiyaçlarını birlikte değerlendirelim.
         </p>
 
         <a href="#iletisim" class="enterprise__cta">
@@ -52,33 +51,6 @@ import { enterpriseUseCases } from "../../data/use-cases";
       </div>
     </div>
 
-    <div class="enterprise__network" aria-hidden="true">
-      <div class="enterprise-node enterprise-node--1">
-        <span></span>
-      </div>
-
-      <div class="enterprise-node enterprise-node--2">
-        <span></span>
-      </div>
-
-      <div class="enterprise-node enterprise-node--3">
-        <span></span>
-      </div>
-
-      <div class="enterprise-node enterprise-node--4">
-        <span></span>
-      </div>
-
-      <svg viewBox="0 0 1200 220" preserveAspectRatio="none">
-        <path d="M100 150 L380 75 L690 145 L1080 60"></path>
-
-        <path d="M380 75 L690 145"></path>
-      </svg>
-
-      <div class="enterprise__network-label">
-        DISTRIBUTED COMMUNICATION INFRASTRUCTURE
-      </div>
-    </div>
   </Container>
 </section>
 
@@ -428,4 +400,10 @@ import { enterpriseUseCases } from "../../data/use-cases";
       height: 5px;
     }
   }
+
+.enterprise h2 { font-size:clamp(32px,4.3vw,56px); line-height:1.08; }
+.enterprise__layout { gap:32px; }
+.use-case { min-height:64px; padding:16px; }
+.use-case__arrow { display:none; }
+
 </style>
