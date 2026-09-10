@@ -1,14 +1,13 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/layout/Header.astro";
-import NetworkSection from "../components/sections/NetworkSection.astro";
 import Hero from "../components/sections/Hero.astro";
-import DisasterTimeline from "../components/sections/DisasterTimeline.astro";
 import Ecosystem from "../components/sections/Ecosystem.astro";
+import DisasterTimeline from "../components/sections/DisasterTimeline.astro";
+import NetworkSection from "../components/sections/NetworkSection.astro";
 import CapabilitiesSection from "../components/sections/CapabilitiesSection.astro";
 import EnterpriseSection from "../components/sections/EnterpriseSection.astro";
 import ContactSection from "../components/sections/ContactSection.astro";
-import FinalCTA from "../components/sections/FinalCTA.astro";
 import Footer from "../components/layout/Footer.astro";
 ---
 
@@ -17,6 +16,7 @@ import Footer from "../components/layout/Footer.astro";
   description="Seizma; afet öncesi, anı ve sonrasında iletişimin devam etmesini destekleyen mobil uygulama, Home Booster ve saha iletişim altyapısından oluşan teknoloji ekosistemidir."
 >
   <Header />
+
   <main id="main-content" tabindex="-1">
     <Hero />
     <Ecosystem />
@@ -25,7 +25,7 @@ import Footer from "../components/layout/Footer.astro";
     <CapabilitiesSection />
     <EnterpriseSection />
     <ContactSection />
-    <FinalCTA />
   </main>
+
   <Footer />
 </BaseLayout>
