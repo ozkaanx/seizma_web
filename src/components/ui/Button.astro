@@ -24,7 +24,9 @@ const { href, variant = "primary", size = "medium" } = Astro.props;
     border: 1px solid transparent;
 
     font-weight: 600;
-    line-height: 1;
+    line-height: 1.4;
+    text-align: center;
+    padding-block: 12px;
 
     transition:
       background-color var(--transition-default),
@@ -72,6 +74,12 @@ const { href, variant = "primary", size = "medium" } = Astro.props;
       0 12px 36px rgba(234, 255, 0, 0.16);
   }
 
+  .button--secondary {
+    border-color: rgba(255, 255, 255, 0.24);
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+
   .button--secondary:hover {
     border-color: var(--color-accent);
 
@@ -81,6 +89,7 @@ const { href, variant = "primary", size = "medium" } = Astro.props;
   }
 
   .button__arrow {
+    flex-shrink: 0;
     font-size: 16px;
 
     transition: transform var(--transition-default);

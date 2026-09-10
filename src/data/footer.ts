@@ -14,12 +14,12 @@ export const footerGroups: FooterGroup[] = [
     title: "Seizma",
     links: [
       {
-        label: "Teknoloji",
-        href: "#teknoloji",
+        label: "Ürünler",
+        href: "#urunler",
       },
       {
-        label: "Ekosistem",
-        href: "#ekosistem",
+        label: "İletişim",
+        href: "#iletisim",
       },
       {
         label: "Nasıl Çalışır?",
@@ -37,15 +37,15 @@ export const footerGroups: FooterGroup[] = [
     links: [
       {
         label: "Seizma App",
-        href: "#ekosistem",
+        href: "#urunler",
       },
       {
         label: "Home Booster",
-        href: "#ekosistem",
+        href: "#urunler",
       },
       {
         label: "Seizma Booster",
-        href: "#ekosistem",
+        href: "#urunler",
       },
     ],
   },
