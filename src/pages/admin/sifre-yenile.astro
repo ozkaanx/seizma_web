@@ -1,0 +1,532 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Yeni Şifre | Seizma Admin"
+  description="Seizma admin hesabı yeni şifre oluşturma."
+>
+  <main class="reset-page">
+    <div class="reset-wrapper">
+      <a
+        href="/"
+        class="reset-logo"
+      >
+        seizma<span>.</span>
+      </a>
+
+      <div class="reset-card">
+        <div class="reset-eyebrow">
+          <span></span>
+          HESAP GÜVENLİĞİ
+        </div>
+
+        <h1>
+          Yeni
+          <span>şifre.</span>
+        </h1>
+
+        <p>
+          Yönetim paneli hesabın için yeni
+          bir şifre belirle.
+        </p>
+
+        <div
+          id="page-loading"
+          class="page-loading"
+        >
+          Bağlantı doğrulanıyor...
+        </div>
+
+        <form
+          id="reset-form"
+          class="reset-form"
+          hidden
+        >
+          <div class="form-field">
+            <label for="password">
+              Yeni şifre
+            </label>
+
+            <input
+              id="password"
+              name="password"
+              type="password"
+              minlength="10"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="password-confirm">
+              Yeni şifre tekrar
+            </label>
+
+            <input
+              id="password-confirm"
+              name="password-confirm"
+              type="password"
+              minlength="10"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+
+          <button
+            id="submit-button"
+            class="reset-submit"
+            type="submit"
+          >
+            <span id="submit-label">
+              Şifreyi Güncelle
+            </span>
+
+            <span>↗</span>
+          </button>
+
+          <div
+            id="form-message"
+            class="reset-message"
+            role="status"
+          ></div>
+        </form>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { supabase } from "../../lib/supabase";
+
+  const form =
+    document.querySelector<HTMLFormElement>(
+      "#reset-form",
+    );
+
+  const loading =
+    document.querySelector<HTMLElement>(
+      "#page-loading",
+    );
+
+  const button =
+    document.querySelector<HTMLButtonElement>(
+      "#submit-button",
+    );
+
+  const label =
+    document.querySelector<HTMLElement>(
+      "#submit-label",
+    );
+
+  const message =
+    document.querySelector<HTMLElement>(
+      "#form-message",
+    );
+
+  const showMessage = (
+    text: string,
+    type:
+      | "success"
+      | "error",
+  ) => {
+    if (!message) {
+      return;
+    }
+
+    message.textContent =
+      text;
+
+    message.className =
+      `reset-message reset-message--${type}`;
+  };
+
+  const setLoading = (
+    state: boolean,
+  ) => {
+    if (button) {
+      button.disabled =
+        state;
+    }
+
+    if (label) {
+      label.textContent =
+        state
+          ? "Güncelleniyor..."
+          : "Şifreyi Güncelle";
+    }
+  };
+
+  const initialize =
+    async () => {
+      /*
+       * Supabase recovery linki açılınca
+       * recovery session oluşturur.
+       */
+      const {
+        data: {
+          session,
+        },
+      } =
+        await supabase.auth.getSession();
+
+      if (!session) {
+        /*
+         * URL tokenının işlenmesi için
+         * kısa süre bekliyoruz.
+         */
+        await new Promise(
+          (resolve) =>
+            setTimeout(
+              resolve,
+              800,
+            ),
+        );
+      }
+
+      const {
+        data: {
+          user,
+        },
+        error,
+      } =
+        await supabase.auth.getUser();
+
+      if (
+        error ||
+        !user
+      ) {
+        if (loading) {
+          loading.textContent =
+            "Şifre yenileme bağlantısı geçersiz veya süresi dolmuş.";
+        }
+
+        return;
+      }
+
+      if (loading) {
+        loading.hidden =
+          true;
+      }
+
+      if (form) {
+        form.hidden =
+          false;
+      }
+    };
+
+  form?.addEventListener(
+    "submit",
+    async (
+      event,
+    ) => {
+      event.preventDefault();
+
+      const formData =
+        new FormData(form);
+
+      const password =
+        String(
+          formData.get(
+            "password",
+          ) ?? "",
+        );
+
+      const confirmation =
+        String(
+          formData.get(
+            "password-confirm",
+          ) ?? "",
+        );
+
+      if (
+        password.length <
+        10
+      ) {
+        showMessage(
+          "Şifre en az 10 karakter olmalıdır.",
+          "error",
+        );
+
+        return;
+      }
+
+      if (
+        password !==
+        confirmation
+      ) {
+        showMessage(
+          "Şifreler eşleşmiyor.",
+          "error",
+        );
+
+        return;
+      }
+
+      setLoading(true);
+
+      const {
+        error,
+      } =
+        await supabase.auth
+          .updateUser({
+            password,
+          });
+
+      if (error) {
+        console.error(
+          error,
+        );
+
+        showMessage(
+          "Şifre güncellenemedi.",
+          "error",
+        );
+
+        setLoading(false);
+
+        return;
+      }
+
+      showMessage(
+        "Şifren başarıyla güncellendi. Giriş ekranına yönlendiriliyorsun.",
+        "success",
+      );
+
+      await supabase.auth.signOut();
+
+      window.setTimeout(
+        () => {
+          window.location.replace(
+            "/admin",
+          );
+        },
+        1200,
+      );
+    },
+  );
+
+  void initialize();
+</script>
+
+<style>
+  .reset-page {
+    min-height: 100svh;
+
+    display: grid;
+    place-items: center;
+
+    padding: 40px 20px;
+
+    background: #070807;
+  }
+
+  .reset-wrapper {
+    width:
+      min(
+        100%,
+        460px
+      );
+  }
+
+  .reset-logo {
+    display: inline-block;
+
+    margin-bottom: 30px;
+
+    font-size: 28px;
+    font-weight: 700;
+
+    letter-spacing:
+      -0.055em;
+  }
+
+  .reset-logo span,
+  .reset-card h1 span {
+    color:
+      var(--color-accent);
+  }
+
+  .reset-card {
+    padding:
+      clamp(
+        25px,
+        5vw,
+        38px
+      );
+
+    border:
+      1px solid
+      var(--color-border);
+
+    border-radius: 20px;
+
+    background:
+      var(--color-surface);
+  }
+
+  .reset-eyebrow {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 18px;
+
+    color:
+      var(--color-text-muted);
+
+    font-family:
+      var(--font-mono);
+
+    font-size: 9px;
+  }
+
+  .reset-eyebrow span {
+    width: 20px;
+    height: 1px;
+
+    background:
+      var(--color-accent);
+  }
+
+  .reset-card h1 {
+    margin: 0;
+
+    font-size: 50px;
+
+    line-height: 1;
+
+    letter-spacing:
+      -0.055em;
+  }
+
+  .reset-card h1 span {
+    display: block;
+  }
+
+  .reset-card > p {
+    margin-top: 17px;
+
+    color:
+      var(--color-text-muted);
+
+    font-size: 13px;
+
+    line-height: 1.7;
+  }
+
+  .page-loading {
+    margin-top: 28px;
+
+    color:
+      var(--color-text-muted);
+
+    font-size: 11px;
+  }
+
+  .page-loading[hidden],
+  .reset-form[hidden] {
+    display: none;
+  }
+
+  .reset-form {
+    display: flex;
+    flex-direction: column;
+
+    gap: 19px;
+
+    margin-top: 30px;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+
+    gap: 9px;
+  }
+
+  .form-field label {
+    color: #a8aba2;
+
+    font-family:
+      var(--font-mono);
+
+    font-size: 10px;
+  }
+
+  .form-field input {
+    height: 52px;
+
+    padding: 0 15px;
+
+    border:
+      1px solid
+      var(--color-border);
+
+    border-radius: 9px;
+
+    outline: none;
+
+    background: #090a08;
+
+    color:
+      var(--color-text);
+  }
+
+  .form-field input:focus {
+    border-color:
+      rgba(
+        234,
+        255,
+        0,
+        0.45
+      );
+  }
+
+  .reset-submit {
+    min-height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 17px;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    background:
+      var(--color-accent);
+
+    color: #070807;
+
+    font-weight: 700;
+
+    cursor: pointer;
+  }
+
+  .reset-message {
+    display: none;
+
+    padding: 12px;
+
+    border-radius: 8px;
+
+    font-size: 11px;
+  }
+
+  .reset-message--success {
+    display: block;
+
+    color:
+      var(--color-accent);
+  }
+
+  .reset-message--error {
+    display: block;
+
+    color: #ff9090;
+  }
+</style>

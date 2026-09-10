@@ -1,0 +1,537 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Şifremi Unuttum | Seizma Admin"
+  description="Seizma yönetim paneli şifre sıfırlama."
+>
+  <main class="auth-page">
+    <div
+      class="auth-page__glow"
+      aria-hidden="true"
+    ></div>
+
+    <div class="auth-wrapper">
+      <a
+        href="/"
+        class="auth-logo"
+      >
+        seizma<span>.</span>
+      </a>
+
+      <div class="auth-card">
+        <div class="auth-eyebrow">
+          <span></span>
+          YÖNETİM PANELİ
+        </div>
+
+        <h1>
+          Şifreni
+          <span>sıfırla.</span>
+        </h1>
+
+        <p class="auth-description">
+          Admin hesabında kullandığın e-posta
+          adresini gir. Şifre yenileme bağlantısını
+          e-posta adresine göndereceğiz.
+        </p>
+
+        <form
+          id="forgot-form"
+          class="auth-form"
+          novalidate
+        >
+          <div class="form-field">
+            <label for="email">
+              E-posta
+            </label>
+
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="admin@seizma.com"
+              required
+            />
+          </div>
+
+          <button
+            id="submit-button"
+            class="auth-submit"
+            type="submit"
+          >
+            <span id="submit-label">
+              Sıfırlama Bağlantısı Gönder
+            </span>
+
+            <span>↗</span>
+          </button>
+
+          <div
+            id="form-message"
+            class="auth-message"
+            role="status"
+            aria-live="polite"
+          ></div>
+        </form>
+      </div>
+
+      <a
+        href="/admin"
+        class="auth-back"
+      >
+        ← Giriş ekranına dön
+      </a>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { supabase } from "../../lib/supabase";
+
+  const form =
+    document.querySelector<HTMLFormElement>(
+      "#forgot-form",
+    );
+
+  const button =
+    document.querySelector<HTMLButtonElement>(
+      "#submit-button",
+    );
+
+  const label =
+    document.querySelector<HTMLElement>(
+      "#submit-label",
+    );
+
+  const message =
+    document.querySelector<HTMLElement>(
+      "#form-message",
+    );
+
+  const setLoading = (
+    loading: boolean,
+  ) => {
+    if (button) {
+      button.disabled =
+        loading;
+    }
+
+    if (label) {
+      label.textContent =
+        loading
+          ? "Gönderiliyor..."
+          : "Sıfırlama Bağlantısı Gönder";
+    }
+  };
+
+  const showMessage = (
+    text: string,
+    type:
+      | "success"
+      | "error",
+  ) => {
+    if (!message) {
+      return;
+    }
+
+    message.textContent =
+      text;
+
+    message.className =
+      `auth-message auth-message--${type}`;
+  };
+
+  form?.addEventListener(
+    "submit",
+    async (
+      event,
+    ) => {
+      event.preventDefault();
+
+      const formData =
+        new FormData(form);
+
+      const email =
+        String(
+          formData.get(
+            "email",
+          ) ?? "",
+        )
+          .trim()
+          .toLowerCase();
+
+      if (
+        !email ||
+        !email.includes("@")
+      ) {
+        showMessage(
+          "Geçerli bir e-posta adresi girin.",
+          "error",
+        );
+
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const redirectTo =
+          `${window.location.origin}/admin/sifre-yenile`;
+
+        const {
+          error,
+        } =
+          await supabase.auth
+            .resetPasswordForEmail(
+              email,
+              {
+                redirectTo,
+              },
+            );
+
+        if (error) {
+          console.error(
+            error,
+          );
+
+          showMessage(
+            "İşlem gerçekleştirilemedi. Lütfen tekrar deneyin.",
+            "error",
+          );
+
+          return;
+        }
+
+        /*
+         * Güvenlik için hesabın var olup
+         * olmadığını açıklamıyoruz.
+         */
+        showMessage(
+          "Bu e-posta adresine bağlı bir hesap varsa şifre yenileme bağlantısı gönderildi.",
+          "success",
+        );
+
+        form.reset();
+      } catch (
+        error
+      ) {
+        console.error(
+          error,
+        );
+
+        showMessage(
+          "Bir bağlantı hatası oluştu.",
+          "error",
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+  );
+</script>
+
+<style>
+  .auth-page {
+    position: relative;
+
+    min-height: 100svh;
+
+    display: grid;
+    place-items: center;
+
+    padding: 40px 20px;
+
+    overflow: hidden;
+
+    background: #070807;
+  }
+
+  .auth-page__glow {
+    position: absolute;
+
+    top: -260px;
+    right: -240px;
+
+    width: 650px;
+    height: 650px;
+
+    border-radius: 50%;
+
+    background:
+      rgba(
+        234,
+        255,
+        0,
+        0.055
+      );
+
+    filter:
+      blur(130px);
+
+    pointer-events: none;
+  }
+
+  .auth-wrapper {
+    position: relative;
+    z-index: 1;
+
+    width:
+      min(
+        100%,
+        460px
+      );
+  }
+
+  .auth-logo {
+    display: inline-block;
+
+    margin-bottom: 30px;
+
+    color:
+      var(--color-text);
+
+    font-size: 28px;
+    font-weight: 700;
+
+    letter-spacing:
+      -0.055em;
+  }
+
+  .auth-logo span,
+  .auth-card h1 span {
+    color:
+      var(--color-accent);
+  }
+
+  .auth-card {
+    padding:
+      clamp(
+        25px,
+        5vw,
+        38px
+      );
+
+    border:
+      1px solid
+      var(--color-border);
+
+    border-radius: 20px;
+
+    background:
+      rgba(
+        17,
+        19,
+        16,
+        0.94
+      );
+  }
+
+  .auth-eyebrow {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 18px;
+
+    color:
+      var(--color-text-muted);
+
+    font-family:
+      var(--font-mono);
+
+    font-size: 9px;
+
+    letter-spacing:
+      0.12em;
+  }
+
+  .auth-eyebrow span {
+    width: 20px;
+    height: 1px;
+
+    background:
+      var(--color-accent);
+  }
+
+  .auth-card h1 {
+    margin: 0;
+
+    font-size:
+      clamp(
+        39px,
+        8vw,
+        52px
+      );
+
+    line-height: 1;
+
+    letter-spacing:
+      -0.055em;
+  }
+
+  .auth-card h1 span {
+    display: block;
+  }
+
+  .auth-description {
+    margin-top: 18px;
+
+    color:
+      var(--color-text-muted);
+
+    font-size: 13px;
+
+    line-height: 1.7;
+  }
+
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+
+    gap: 20px;
+
+    margin-top: 30px;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+
+    gap: 9px;
+  }
+
+  .form-field label {
+    color: #a8aba2;
+
+    font-family:
+      var(--font-mono);
+
+    font-size: 10px;
+  }
+
+  .form-field input {
+    width: 100%;
+    height: 52px;
+
+    padding: 0 15px;
+
+    border:
+      1px solid
+      var(--color-border);
+
+    border-radius: 10px;
+
+    outline: none;
+
+    background: #0a0b09;
+
+    color:
+      var(--color-text);
+  }
+
+  .form-field input:focus {
+    border-color:
+      rgba(
+        234,
+        255,
+        0,
+        0.5
+      );
+  }
+
+  .auth-submit {
+    min-height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding:
+      0 17px;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    background:
+      var(--color-accent);
+
+    color: #070807;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+  }
+
+  .auth-submit:disabled {
+    opacity: 0.5;
+  }
+
+  .auth-message {
+    display: none;
+
+    padding:
+      12px 13px;
+
+    border-radius: 8px;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+  }
+
+  .auth-message--success {
+    display: block;
+
+    border:
+      1px solid
+      rgba(
+        234,
+        255,
+        0,
+        0.16
+      );
+
+    background:
+      rgba(
+        234,
+        255,
+        0,
+        0.035
+      );
+
+    color:
+      var(--color-accent);
+  }
+
+  .auth-message--error {
+    display: block;
+
+    border:
+      1px solid
+      rgba(
+        255,
+        100,
+        100,
+        0.16
+      );
+
+    color: #ff9090;
+  }
+
+  .auth-back {
+    display: inline-block;
+
+    margin-top: 22px;
+
+    color:
+      var(--color-text-muted);
+
+    font-size: 11px;
+  }
+</style>    

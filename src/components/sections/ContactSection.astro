@@ -1,0 +1,1067 @@
+---
+import Container from "../ui/Container.astro";
+---
+
+<section id="iletisim" class="contact" aria-labelledby="contact-title">
+  <Container>
+    <div class="contact__layout">
+      <div class="contact__content">
+        <div class="contact__eyebrow">
+          <span aria-hidden="true"></span>
+          İLETİŞİM
+        </div>
+
+        <h2 id="contact-title">
+          Birlikte
+          <span>konuşalım.</span>
+        </h2>
+
+        <p class="contact__description">
+          Seizma ürünleri, kurumsal çözümler veya teknik altyapı hakkında bilgi
+          almak için bizimle iletişime geçin.
+        </p>
+
+        <div class="contact__info">
+          <span class="contact__info-label"> E-POSTA </span>
+
+          <a href="mailto:info@seizma.com"> info@seizma.com </a>
+        </div>
+      </div>
+
+      <div class="contact__form-wrapper">
+        <form id="contact-form" class="contact-form" novalidate>
+          <!--
+            Honeypot alanı.
+            Kullanıcı görmez, bot doldurursa gönderim yapılmaz.
+          -->
+          <div class="contact-form__honeypot" aria-hidden="true">
+            <label for="website"> Website </label>
+
+            <input
+              id="website"
+              name="website"
+              type="text"
+              tabindex="-1"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="contact-form__row">
+            <div class="form-field">
+              <label for="name"> Ad Soyad </label>
+
+              <input
+                id="name"
+                name="name"
+                type="text"
+                maxlength="120"
+                autocomplete="name"
+                placeholder="Adınız ve soyadınız"
+                required
+              />
+
+              <span class="form-field__error" data-error-for="name"></span>
+            </div>
+
+            <div class="form-field">
+              <label for="email"> E-posta </label>
+
+              <input
+                id="email"
+                name="email"
+                type="email"
+                maxlength="254"
+                autocomplete="email"
+                placeholder="ornek@firma.com"
+                required
+              />
+
+              <span class="form-field__error" data-error-for="email"></span>
+            </div>
+          </div>
+
+          <div class="contact-form__row">
+            <div class="form-field">
+              <label for="phone"> Telefon </label>
+
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                maxlength="30"
+                autocomplete="tel"
+                placeholder="+90 5XX XXX XX XX"
+              />
+
+              <span class="form-field__error" data-error-for="phone"></span>
+            </div>
+
+            <div class="form-field">
+              <label for="company"> Kurum / Firma </label>
+
+              <input
+                id="company"
+                name="company"
+                type="text"
+                maxlength="160"
+                autocomplete="organization"
+                placeholder="Firma adı"
+              />
+
+              <span class="form-field__error" data-error-for="company"></span>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="subject"> Konu </label>
+
+            <div class="form-field__select">
+              <select id="subject" name="subject" required>
+                <option value="" disabled selected> Konu seçin </option>
+
+                <option value="products"> Seizma ürünleri </option>
+
+                <option value="corporate"> Kurumsal çözüm </option>
+
+                <option value="technical"> Teknik bilgi </option>
+
+                <option value="other"> Diğer </option>
+              </select>
+            </div>
+
+            <span class="form-field__error" data-error-for="subject"></span>
+          </div>
+
+          <div class="form-field">
+            <label for="message"> Mesajınız </label>
+
+            <textarea
+              id="message"
+              name="message"
+              rows="5"
+              minlength="10"
+              maxlength="2000"
+              placeholder="Size nasıl yardımcı olabiliriz?"
+              required></textarea>
+
+            <div class="form-field__message-meta">
+              <span class="form-field__error" data-error-for="message"></span>
+
+              <span id="message-counter" class="form-field__counter">
+                0 / 2000
+              </span>
+            </div>
+          </div>
+
+          <div class="contact-form__footer">
+            <p class="contact-form__privacy">
+              Formu göndererek iletişim talebiniz kapsamında sizinle iletişime
+              geçilmesini kabul etmiş olursunuz.
+            </p>
+
+            <button class="contact-form__submit" type="submit">
+              <span class="contact-form__submit-label"> Mesaj Gönder </span>
+
+              <span class="contact-form__submit-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </button>
+          </div>
+
+          <div
+            id="contact-form-message"
+            class="contact-form__message"
+            role="status"
+            aria-live="polite"
+          >
+          </div>
+        </form>
+      </div>
+    </div>
+  </Container>
+</section>
+
+<script>
+  import { supabase } from "../../lib/supabase";
+
+  const form = document.querySelector<HTMLFormElement>("#contact-form");
+
+  const submitButton = form?.querySelector<HTMLButtonElement>(
+    ".contact-form__submit",
+  );
+
+  const submitLabel = form?.querySelector<HTMLElement>(
+    ".contact-form__submit-label",
+  );
+
+  const formMessage = document.querySelector<HTMLElement>(
+    "#contact-form-message",
+  );
+
+  const messageInput = document.querySelector<HTMLTextAreaElement>("#message");
+
+  const messageCounter =
+    document.querySelector<HTMLElement>("#message-counter");
+
+  const allowedSubjects = ["products", "corporate", "technical", "other"];
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const getValue = (formData: FormData, key: string) => {
+    return String(formData.get(key) ?? "").trim();
+  };
+
+  const getErrorElement = (name: string) => {
+    return document.querySelector<HTMLElement>(`[data-error-for="${name}"]`);
+  };
+
+  const getField = (name: string) => {
+    return form?.querySelector<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >(`[name="${name}"]`);
+  };
+
+  const setFieldError = (name: string, message: string) => {
+    const element = getErrorElement(name);
+
+    const field = getField(name);
+
+    if (element) {
+      element.textContent = message;
+    }
+
+    if (field) {
+      field.setAttribute("aria-invalid", "true");
+
+      field.classList.add("form-control--error");
+    }
+  };
+
+  const clearFieldError = (name: string) => {
+    const element = getErrorElement(name);
+
+    const field = getField(name);
+
+    if (element) {
+      element.textContent = "";
+    }
+
+    if (field) {
+      field.removeAttribute("aria-invalid");
+
+      field.classList.remove("form-control--error");
+    }
+  };
+
+  const clearAllErrors = () => {
+    ["name", "email", "phone", "company", "subject", "message"].forEach(
+      clearFieldError,
+    );
+  };
+
+  const clearFormMessage = () => {
+    if (!formMessage) {
+      return;
+    }
+
+    formMessage.textContent = "";
+
+    formMessage.classList.remove(
+      "contact-form__message--success",
+      "contact-form__message--error",
+    );
+  };
+
+  const setFormMessage = (text: string, type: "success" | "error") => {
+    if (!formMessage) {
+      return;
+    }
+
+    formMessage.textContent = text;
+
+    formMessage.classList.remove(
+      "contact-form__message--success",
+      "contact-form__message--error",
+    );
+
+    formMessage.classList.add(`contact-form__message--${type}`);
+  };
+
+  const setLoading = (loading: boolean) => {
+    if (submitButton) {
+      submitButton.disabled = loading;
+    }
+
+    if (submitLabel) {
+      submitLabel.textContent = loading ? "Gönderiliyor..." : "Mesaj Gönder";
+    }
+  };
+
+  const updateCounter = () => {
+    if (!messageInput || !messageCounter) {
+      return;
+    }
+
+    messageCounter.textContent = `${messageInput.value.length} / 2000`;
+  };
+
+  messageInput?.addEventListener("input", updateCounter);
+
+  form
+    ?.querySelectorAll<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >("input:not([name='website']), textarea, select")
+    .forEach((field) => {
+      field.addEventListener("input", () => {
+        clearFieldError(field.name);
+      });
+
+      field.addEventListener("change", () => {
+        clearFieldError(field.name);
+      });
+    });
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    clearAllErrors();
+    clearFormMessage();
+
+    const formData = new FormData(form);
+
+    /*
+     * Honeypot
+     */
+    const website = getValue(formData, "website");
+
+    if (website) {
+      /*
+       * Botlara başarılı olmuş gibi davranıyoruz.
+       */
+      form.reset();
+      updateCounter();
+
+      setFormMessage("Mesajınız başarıyla alındı.", "success");
+
+      return;
+    }
+
+    const fullName = getValue(formData, "name");
+
+    const email = getValue(formData, "email").toLowerCase();
+
+    const phone = getValue(formData, "phone");
+
+    const company = getValue(formData, "company");
+
+    const subject = getValue(formData, "subject");
+
+    const message = getValue(formData, "message");
+
+    let hasError = false;
+
+    /*
+     * AD SOYAD
+     */
+    if (fullName.length < 2) {
+      setFieldError("name", "Lütfen adınızı ve soyadınızı girin.");
+
+      hasError = true;
+    }
+
+    if (fullName.length > 120) {
+      setFieldError("name", "Ad soyad en fazla 120 karakter olabilir.");
+
+      hasError = true;
+    }
+
+    /*
+     * E-POSTA
+     */
+    if (!emailRegex.test(email)) {
+      setFieldError("email", "Lütfen geçerli bir e-posta adresi girin.");
+
+      hasError = true;
+    }
+
+    if (email.length > 254) {
+      setFieldError("email", "E-posta adresi çok uzun.");
+
+      hasError = true;
+    }
+
+    /*
+     * TELEFON
+     */
+    if (phone.length > 30) {
+      setFieldError("phone", "Telefon numarası çok uzun.");
+
+      hasError = true;
+    }
+
+    /*
+     * KURUM
+     */
+    if (company.length > 160) {
+      setFieldError("company", "Kurum adı en fazla 160 karakter olabilir.");
+
+      hasError = true;
+    }
+
+    /*
+     * KONU
+     */
+    if (!allowedSubjects.includes(subject)) {
+      setFieldError("subject", "Lütfen bir konu seçin.");
+
+      hasError = true;
+    }
+
+    /*
+     * MESAJ
+     */
+    if (message.length < 10) {
+      setFieldError("message", "Mesajınız en az 10 karakter olmalıdır.");
+
+      hasError = true;
+    }
+
+    if (message.length > 2000) {
+      setFieldError("message", "Mesajınız en fazla 2000 karakter olabilir.");
+
+      hasError = true;
+    }
+
+    if (hasError) {
+      const firstInvalidField = form.querySelector<HTMLElement>(
+        "[aria-invalid='true']",
+      );
+
+      firstInvalidField?.focus();
+
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.from("contact_submissions").insert({
+        full_name: fullName,
+        email,
+        phone: phone || null,
+        company: company || null,
+        subject,
+        message,
+      });
+
+      if (error) {
+        console.error("Supabase contact form error:", error);
+
+        setFormMessage(
+          "Mesajınız gönderilemedi. Lütfen bir süre sonra tekrar deneyin.",
+          "error",
+        );
+
+        return;
+      }
+
+      form.reset();
+
+      updateCounter();
+
+      clearAllErrors();
+
+      setFormMessage(
+        "Mesajınız başarıyla alındı. En kısa sürede sizinle iletişime geçeceğiz.",
+        "success",
+      );
+    } catch (error) {
+      console.error("Contact form error:", error);
+
+      setFormMessage(
+        "Bir bağlantı hatası oluştu. Lütfen tekrar deneyin.",
+        "error",
+      );
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  updateCounter();
+</script>
+
+<style>
+  .contact {
+    position: relative;
+
+    padding-block: clamp(64px, 8vw, 110px);
+
+    scroll-margin-top: 96px;
+
+    border-top: 1px solid var(--color-border);
+
+    border-bottom: 1px solid var(--color-border);
+
+    background: #080907;
+  }
+
+  .contact__layout {
+    display: grid;
+
+    grid-template-columns:
+      minmax(0, 0.8fr)
+      minmax(480px, 1.2fr);
+
+    align-items: start;
+
+    gap: clamp(60px, 8vw, 120px);
+  }
+
+  /*
+   * CONTENT
+   */
+
+  .contact__content {
+    position: sticky;
+
+    top: 120px;
+  }
+
+  .contact__eyebrow {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 20px;
+
+    color: var(--color-text-muted);
+
+    font-family: var(--font-mono);
+
+    font-size: 10px;
+
+    font-weight: 500;
+
+    letter-spacing: 0.12em;
+
+    text-transform: uppercase;
+  }
+
+  .contact__eyebrow > span {
+    width: 24px;
+    height: 1px;
+
+    flex-shrink: 0;
+
+    background: var(--color-accent);
+  }
+
+  .contact h2 {
+    margin: 0;
+
+    font-size: clamp(42px, 5vw, 68px);
+
+    font-weight: 600;
+
+    line-height: 1;
+
+    letter-spacing: -0.055em;
+  }
+
+  .contact h2 > span {
+    display: block;
+
+    color: var(--color-accent);
+  }
+
+  .contact__description {
+    max-width: 470px;
+
+    margin-top: 24px;
+
+    color: var(--color-text-muted);
+
+    font-size: 15px;
+
+    line-height: 1.75;
+  }
+
+  .contact__info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+
+    margin-top: 42px;
+  }
+
+  .contact__info-label {
+    color: #676b61;
+
+    font-family: var(--font-mono);
+
+    font-size: 9px;
+
+    font-weight: 500;
+
+    letter-spacing: 0.12em;
+
+    text-transform: uppercase;
+  }
+
+  .contact__info a {
+    width: fit-content;
+
+    color: var(--color-text);
+
+    font-size: 16px;
+
+    transition: color var(--transition-default);
+  }
+
+  .contact__info a:hover {
+    color: var(--color-accent);
+  }
+
+  /*
+   * FORM
+   */
+
+  .contact__form-wrapper {
+    padding: clamp(24px, 3vw, 38px);
+
+    border: 1px solid var(--color-border);
+
+    border-radius: 18px;
+
+    background: #10120e;
+  }
+
+  .contact-form {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 22px;
+  }
+
+  /*
+   * HONEYPOT
+   */
+
+  .contact-form__honeypot {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    overflow: hidden;
+
+    clip: rect(0, 0, 0, 0);
+
+    white-space: nowrap;
+
+    opacity: 0;
+
+    pointer-events: none;
+  }
+
+  /*
+   * ROWS
+   */
+
+  .contact-form__row {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 14px;
+  }
+
+  /*
+   * FIELD
+   */
+
+  .form-field {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 9px;
+  }
+
+  .form-field label {
+    color: #a8aba2;
+
+    font-family: var(--font-mono);
+
+    font-size: 10px;
+
+    font-weight: 500;
+
+    letter-spacing: 0.04em;
+  }
+
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    width: 100%;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 10px;
+
+    outline: none;
+
+    background: #0a0b09;
+
+    color: var(--color-text);
+
+    font-family: var(--font-sans);
+
+    font-size: 14px;
+
+    transition:
+      border-color var(--transition-default),
+      background var(--transition-default),
+      box-shadow var(--transition-default);
+  }
+
+  .form-field input,
+  .form-field select {
+    height: 52px;
+
+    padding-inline: 15px;
+  }
+
+  .form-field textarea {
+    min-height: 145px;
+
+    padding: 15px;
+
+    line-height: 1.6;
+
+    resize: vertical;
+  }
+
+  .form-field input::placeholder,
+  .form-field textarea::placeholder {
+    color: #555950;
+  }
+
+  .form-field input:hover,
+  .form-field select:hover,
+  .form-field textarea:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus {
+    border-color: rgba(234, 255, 0, 0.55);
+
+    background: #0d0f0b;
+
+    box-shadow: 0 0 0 3px rgba(234, 255, 0, 0.04);
+  }
+
+  .form-field .form-control--error {
+    border-color: rgba(255, 102, 102, 0.7);
+  }
+
+  .form-field .form-control--error:focus {
+    box-shadow: 0 0 0 3px rgba(255, 102, 102, 0.05);
+  }
+
+  /*
+   * SELECT
+   */
+
+  .form-field__select {
+    position: relative;
+  }
+
+  .form-field__select::after {
+    content: "";
+
+    position: absolute;
+
+    top: 50%;
+    right: 18px;
+
+    width: 7px;
+    height: 7px;
+
+    border-right: 1px solid var(--color-text-muted);
+
+    border-bottom: 1px solid var(--color-text-muted);
+
+    pointer-events: none;
+
+    transform: translateY(-70%) rotate(45deg);
+  }
+
+  .form-field select {
+    appearance: none;
+
+    padding-right: 45px;
+
+    cursor: pointer;
+  }
+
+  .form-field select option {
+    background: #10120e;
+
+    color: var(--color-text);
+  }
+
+  /*
+   * ERRORS
+   */
+
+  .form-field__error {
+    min-height: 15px;
+
+    color: #ff8b8b;
+
+    font-size: 10px;
+
+    line-height: 1.4;
+  }
+
+  .form-field__message-meta {
+    display: flex;
+
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 20px;
+  }
+
+  .form-field__counter {
+    flex-shrink: 0;
+
+    color: #5e6259;
+
+    font-family: var(--font-mono);
+
+    font-size: 9px;
+  }
+
+  /*
+   * FOOTER
+   */
+
+  .contact-form__footer {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 24px;
+
+    padding-top: 2px;
+  }
+
+  .contact-form__privacy {
+    max-width: 350px;
+
+    margin: 0;
+
+    color: #686c63;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+  }
+
+  .contact-form__submit {
+    min-height: 50px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    gap: 20px;
+
+    padding: 0 20px;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    background: var(--color-accent);
+
+    color: #070807;
+
+    font-family: var(--font-sans);
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+      transform var(--transition-default),
+      opacity var(--transition-default);
+  }
+
+  .contact-form__submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  .contact-form__submit-arrow {
+    transition: transform var(--transition-default);
+  }
+
+  .contact-form__submit:hover:not(:disabled) .contact-form__submit-arrow {
+    transform: translate(3px, -3px);
+  }
+
+  .contact-form__submit:disabled {
+    cursor: not-allowed;
+
+    opacity: 0.55;
+
+    transform: none;
+  }
+
+  /*
+   * RESULT MESSAGE
+   */
+
+  .contact-form__message {
+    display: none;
+
+    padding: 13px 15px;
+
+    border-radius: 9px;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+  }
+
+  .contact-form__message--success {
+    display: block;
+
+    border: 1px solid rgba(234, 255, 0, 0.18);
+
+    background: rgba(234, 255, 0, 0.04);
+
+    color: var(--color-accent);
+  }
+
+  .contact-form__message--error {
+    display: block;
+
+    border: 1px solid rgba(255, 80, 80, 0.18);
+
+    background: rgba(255, 80, 80, 0.04);
+
+    color: #ff8b8b;
+  }
+
+  /*
+   * TABLET
+   */
+
+  @media (max-width: 900px) {
+    .contact__layout {
+      grid-template-columns: minmax(0, 1fr);
+
+      gap: 48px;
+    }
+
+    .contact__content {
+      position: static;
+
+      max-width: 650px;
+    }
+
+    .contact__form-wrapper {
+      width: 100%;
+
+      max-width: 760px;
+    }
+
+    .contact__info {
+      margin-top: 30px;
+    }
+  }
+
+  /*
+   * MOBILE
+   */
+
+  @media (max-width: 640px) {
+    .contact {
+      padding-block: 56px;
+    }
+
+    .contact__layout {
+      gap: 36px;
+    }
+
+    .contact h2 {
+      font-size: clamp(40px, 12vw, 52px);
+    }
+
+    .contact__description {
+      margin-top: 18px;
+
+      font-size: 14px;
+
+      line-height: 1.7;
+    }
+
+    .contact__form-wrapper {
+      padding: 20px;
+
+      border-radius: 14px;
+    }
+
+    .contact-form {
+      gap: 18px;
+    }
+
+    .contact-form__row {
+      grid-template-columns: minmax(0, 1fr);
+
+      gap: 18px;
+    }
+
+    .form-field input,
+    .form-field select {
+      height: 50px;
+    }
+
+    .form-field textarea {
+      min-height: 130px;
+    }
+
+    .contact-form__footer {
+      align-items: stretch;
+
+      flex-direction: column;
+
+      gap: 18px;
+    }
+
+    .contact-form__privacy {
+      max-width: none;
+    }
+
+    .contact-form__submit {
+      width: 100%;
+
+      justify-content: space-between;
+    }
+  }
+</style>
