@@ -1,0 +1,682 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Seizma Admin | Giriş"
+  description="Seizma yönetim paneli giriş ekranı."
+>
+  <main class="admin-login">
+    <div class="admin-login__background" aria-hidden="true"></div>
+
+    <div class="admin-login__wrapper">
+      <a href="/" class="admin-login__logo" aria-label="Seizma ana sayfa">
+        seizma<span>.</span>
+      </a>
+
+      <div class="admin-login__card">
+        <div class="admin-login__eyebrow">
+          <span></span>
+          YÖNETİM PANELİ
+        </div>
+
+        <h1>
+          Admin
+          <span>girişi.</span>
+        </h1>
+
+        <p class="admin-login__description">
+          İletişim taleplerini yönetmek için hesabınızla giriş yapın.
+        </p>
+
+        <form id="admin-login-form" class="admin-login__form" novalidate>
+          <div class="form-field">
+            <label for="email"> E-posta </label>
+
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="admin@seizma.com"
+              required
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="password"> Şifre </label>
+
+            <div class="password-field">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                placeholder="••••••••"
+                required
+              />
+
+              <button
+                id="password-toggle"
+                class="password-field__toggle"
+                type="button"
+                aria-label="Şifreyi göster"
+              >
+                Göster
+              </button>
+            </div>
+          </div>
+
+          <button id="login-submit" class="admin-login__submit" type="submit">
+            <span id="login-submit-label"> Giriş Yap </span>
+
+            <span aria-hidden="true"> ↗ </span>
+          </button>
+
+          <div
+            id="login-message"
+            class="admin-login__message"
+            role="status"
+            aria-live="polite"
+          >
+          </div>
+          <a href="/admin/sifremi-unuttum" class="admin-login__forgot">
+            Şifremi unuttum
+          </a>
+        </form>
+      </div>
+
+      <a href="/" class="admin-login__back"> ← Siteye dön </a>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { supabase } from "../../lib/supabase";
+
+  const form = document.querySelector<HTMLFormElement>("#admin-login-form");
+
+  const submitButton =
+    document.querySelector<HTMLButtonElement>("#login-submit");
+
+  const submitLabel = document.querySelector<HTMLElement>(
+    "#login-submit-label",
+  );
+
+  const messageElement = document.querySelector<HTMLElement>("#login-message");
+
+  const passwordInput = document.querySelector<HTMLInputElement>("#password");
+
+  const passwordToggle =
+    document.querySelector<HTMLButtonElement>("#password-toggle");
+
+  const setLoading = (loading: boolean) => {
+    if (submitButton) {
+      submitButton.disabled = loading;
+    }
+
+    if (submitLabel) {
+      submitLabel.textContent = loading ? "Giriş yapılıyor..." : "Giriş Yap";
+    }
+  };
+
+  const setMessage = (message: string) => {
+    if (!messageElement) {
+      return;
+    }
+
+    messageElement.textContent = message;
+
+    messageElement.classList.add("admin-login__message--error");
+  };
+
+  const clearMessage = () => {
+    if (!messageElement) {
+      return;
+    }
+
+    messageElement.textContent = "";
+
+    messageElement.classList.remove("admin-login__message--error");
+  };
+
+  /*
+   * Kullanıcının gerçekten admin olup
+   * olmadığını kontrol eder.
+   */
+  const isAdminUser = async (userId: string) => {
+    const { data, error } = await supabase
+      .from("admin_users")
+      .select("user_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Admin authorization error:", error);
+
+      return false;
+    }
+
+    return Boolean(data);
+  };
+
+  /*
+   * Sayfa açıldığında mevcut oturumu kontrol eder.
+   *
+   * getUser() Supabase Auth sunucusu üzerinden
+   * kullanıcıyı doğrular.
+   */
+  const checkExistingUser = async () => {
+    try {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (error || !user) {
+        return;
+      }
+
+      const admin = await isAdminUser(user.id);
+
+      if (admin) {
+        window.location.replace("/admin/iletisim");
+
+        return;
+      }
+
+      /*
+       * Giriş yapılmış fakat admin değilse
+       * session açık kalmasın.
+       */
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("Existing admin session check error:", error);
+    }
+  };
+
+  /*
+   * Şifre göster / gizle
+   */
+  passwordToggle?.addEventListener("click", () => {
+    if (!passwordInput) {
+      return;
+    }
+
+    const isPassword = passwordInput.type === "password";
+
+    passwordInput.type = isPassword ? "text" : "password";
+
+    passwordToggle.textContent = isPassword ? "Gizle" : "Göster";
+
+    passwordToggle.setAttribute(
+      "aria-label",
+      isPassword ? "Şifreyi gizle" : "Şifreyi göster",
+    );
+  });
+
+  /*
+   * LOGIN
+   */
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    clearMessage();
+
+    const formData = new FormData(form);
+
+    const email = String(formData.get("email") ?? "")
+      .trim()
+      .toLowerCase();
+
+    const password = String(formData.get("password") ?? "");
+
+    if (!email) {
+      setMessage("Lütfen e-posta adresinizi girin.");
+
+      return;
+    }
+
+    if (!password) {
+      setMessage("Lütfen şifrenizi girin.");
+
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      /*
+       * Supabase Auth login
+       */
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error || !data.user) {
+        setMessage("E-posta veya şifre hatalı.");
+
+        return;
+      }
+
+      /*
+       * Auth başarılı olsa bile
+       * kullanıcı admin_users tablosunda
+       * olmak zorunda.
+       */
+      const admin = await isAdminUser(data.user.id);
+
+      if (!admin) {
+        await supabase.auth.signOut();
+
+        setMessage("Bu hesabın yönetim paneline erişim yetkisi bulunmuyor.");
+
+        return;
+      }
+
+      /*
+       * Başarılı admin login
+       */
+      window.location.replace("/admin/iletisim");
+    } catch (error) {
+      console.error("Admin login error:", error);
+
+      setMessage("Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  checkExistingUser();
+</script>
+
+<style>
+  .admin-login {
+    position: relative;
+
+    min-height: 100svh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px 20px;
+
+    background: #070807;
+
+    overflow: hidden;
+  }
+  .admin-login__forgot {
+    width: fit-content;
+
+    margin-top: -8px;
+
+    color: var(--color-text-muted);
+
+    font-size: 10px;
+
+    transition: color 180ms ease;
+  }
+
+  .admin-login__forgot:hover {
+    color: var(--color-accent);
+  }
+  .admin-login__background {
+    position: absolute;
+    inset: 0;
+
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+
+    background-size: 64px 64px;
+
+    mask-image: radial-gradient(circle at center, black, transparent 80%);
+
+    pointer-events: none;
+  }
+
+  .admin-login::before {
+    content: "";
+
+    position: absolute;
+
+    top: -250px;
+    right: -250px;
+
+    width: 600px;
+    height: 600px;
+
+    border-radius: 50%;
+
+    background: rgba(234, 255, 0, 0.055);
+
+    filter: blur(130px);
+
+    pointer-events: none;
+  }
+
+  .admin-login__wrapper {
+    position: relative;
+    z-index: 1;
+
+    width: min(100%, 460px);
+  }
+
+  /*
+   * LOGO
+   */
+
+  .admin-login__logo {
+    display: inline-block;
+
+    margin-bottom: 32px;
+
+    color: var(--color-text);
+
+    font-size: 28px;
+    font-weight: 700;
+
+    letter-spacing: -0.055em;
+  }
+
+  .admin-login__logo span {
+    color: var(--color-accent);
+  }
+
+  /*
+   * CARD
+   */
+
+  .admin-login__card {
+    padding: clamp(26px, 5vw, 38px);
+
+    border: 1px solid var(--color-border);
+
+    border-radius: 20px;
+
+    background: rgba(17, 19, 16, 0.92);
+
+    backdrop-filter: blur(20px);
+  }
+
+  /*
+   * EYEBROW
+   */
+
+  .admin-login__eyebrow {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 18px;
+
+    color: var(--color-text-muted);
+
+    font-family: var(--font-mono);
+
+    font-size: 9px;
+
+    letter-spacing: 0.12em;
+  }
+
+  .admin-login__eyebrow span {
+    width: 20px;
+    height: 1px;
+
+    background: var(--color-accent);
+  }
+
+  /*
+   * TITLE
+   */
+
+  .admin-login h1 {
+    margin: 0;
+
+    font-size: clamp(40px, 8vw, 54px);
+
+    font-weight: 600;
+
+    line-height: 1;
+
+    letter-spacing: -0.055em;
+  }
+
+  .admin-login h1 span {
+    display: block;
+
+    color: var(--color-accent);
+  }
+
+  .admin-login__description {
+    margin-top: 18px;
+
+    color: var(--color-text-muted);
+
+    font-size: 14px;
+
+    line-height: 1.7;
+  }
+
+  /*
+   * FORM
+   */
+
+  .admin-login__form {
+    display: flex;
+    flex-direction: column;
+
+    gap: 20px;
+
+    margin-top: 34px;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+
+    gap: 9px;
+  }
+
+  .form-field label {
+    color: #a8aba2;
+
+    font-family: var(--font-mono);
+
+    font-size: 10px;
+
+    letter-spacing: 0.04em;
+  }
+
+  .form-field input {
+    width: 100%;
+    height: 52px;
+
+    padding: 0 15px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 10px;
+
+    outline: none;
+
+    background: #0a0b09;
+
+    color: var(--color-text);
+
+    font-size: 14px;
+
+    transition:
+      border-color var(--transition-default),
+      background var(--transition-default),
+      box-shadow var(--transition-default);
+  }
+
+  .form-field input::placeholder {
+    color: #50544c;
+  }
+
+  .form-field input:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .form-field input:focus {
+    border-color: rgba(234, 255, 0, 0.55);
+
+    background: #0d0f0b;
+
+    box-shadow: 0 0 0 3px rgba(234, 255, 0, 0.04);
+  }
+
+  /*
+   * PASSWORD
+   */
+
+  .password-field {
+    position: relative;
+  }
+
+  .password-field input {
+    padding-right: 75px;
+  }
+
+  .password-field__toggle {
+    position: absolute;
+
+    top: 50%;
+    right: 14px;
+
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: var(--color-text-muted);
+
+    font-family: var(--font-mono);
+
+    font-size: 9px;
+
+    cursor: pointer;
+
+    transform: translateY(-50%);
+
+    transition: color var(--transition-default);
+  }
+
+  .password-field__toggle:hover {
+    color: var(--color-accent);
+  }
+
+  /*
+   * BUTTON
+   */
+
+  .admin-login__submit {
+    width: 100%;
+    min-height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 4px;
+
+    padding: 0 18px;
+
+    border: 0;
+
+    border-radius: 10px;
+
+    background: var(--color-accent);
+
+    color: #070807;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+      transform var(--transition-default),
+      opacity var(--transition-default);
+  }
+
+  .admin-login__submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  .admin-login__submit:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+
+    transform: none;
+  }
+
+  /*
+   * ERROR
+   */
+
+  .admin-login__message {
+    display: none;
+
+    padding: 12px 14px;
+
+    border-radius: 8px;
+
+    font-size: 12px;
+
+    line-height: 1.6;
+  }
+
+  .admin-login__message--error {
+    display: block;
+
+    border: 1px solid rgba(255, 80, 80, 0.18);
+
+    background: rgba(255, 80, 80, 0.04);
+
+    color: #ff8b8b;
+  }
+
+  /*
+   * BACK
+   */
+
+  .admin-login__back {
+    display: inline-flex;
+
+    margin-top: 24px;
+
+    color: var(--color-text-muted);
+
+    font-size: 12px;
+
+    transition: color var(--transition-default);
+  }
+
+  .admin-login__back:hover {
+    color: var(--color-text);
+  }
+
+  @media (max-width: 640px) {
+    .admin-login {
+      align-items: flex-start;
+
+      padding-top: 50px;
+    }
+
+    .admin-login__logo {
+      margin-bottom: 24px;
+    }
+
+    .admin-login__card {
+      padding: 24px 20px;
+    }
+  }
+</style>

@@ -1,0 +1,4416 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+---
+
+<BaseLayout
+  title="İletişim Talepleri | Seizma Admin"
+  description="Seizma iletişim talepleri yönetim ekranı."
+>
+  <main class="admin-page">
+    <div class="admin-bg" aria-hidden="true"></div>
+
+    <!-- AUTH / INITIAL LOADING -->
+    <div id="admin-loading" class="admin-loading">
+      <div class="admin-loading__spinner"></div>
+      <span>Yönetim paneli hazırlanıyor...</span>
+    </div>
+
+    <!-- PAGE -->
+    <div id="admin-content" class="admin-content" hidden>
+      <header class="admin-header">
+        <div class="admin-container admin-header__inner">
+          <div class="admin-header__brand">
+            <a href="/" class="admin-logo">
+              seizma<span>.</span>
+            </a>
+
+            <span class="admin-header__divider"></span>
+
+            <span class="admin-header__label"> YÖNETİM PANELİ </span>
+          </div>
+
+          <div class="admin-header__actions">
+            <a
+              href="/"
+              class="admin-header__site-link"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Siteyi Gör
+              <span>↗</span>
+            </a>
+
+            <button
+              id="logout-button"
+              class="admin-header__logout"
+              type="button"
+            >
+              Çıkış Yap
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-container">
+        <section class="admin-hero">
+          <div>
+            <div class="admin-eyebrow">
+              <span></span>
+              İLETİŞİM
+            </div>
+
+            <h1>
+              İletişim
+              <span>talepleri.</span>
+            </h1>
+
+            <p>
+              Web sitesi üzerinden gelen iletişim taleplerini görüntüleyin,
+              takip edin ve süreçlerini yönetin.
+            </p>
+          </div>
+
+          <div class="admin-hero__total">
+            <span>AKTİF TALEP</span>
+            <strong id="total-count">0</strong>
+          </div>
+        </section>
+
+        <!-- STATS -->
+        <section class="admin-stats">
+          <button
+            class="stat-card stat-card--active"
+            type="button"
+            data-filter="all"
+          >
+            <div class="stat-card__top">
+              <span>TÜMÜ</span>
+              <span class="stat-card__dot"></span>
+            </div>
+
+            <strong id="count-all">0</strong>
+            <small>Aktif iletişim talepleri</small>
+          </button>
+
+          <button class="stat-card" type="button" data-filter="new">
+            <div class="stat-card__top">
+              <span>YENİ</span>
+
+              <span class="stat-card__dot stat-card__dot--new"></span>
+            </div>
+
+            <strong id="count-new">0</strong>
+            <small>Henüz işlem yapılmadı</small>
+          </button>
+
+          <button class="stat-card" type="button" data-filter="contacted">
+            <div class="stat-card__top">
+              <span>İLETİŞİME GEÇİLDİ</span>
+
+              <span class="stat-card__dot stat-card__dot--contacted"></span>
+            </div>
+
+            <strong id="count-contacted">0</strong>
+            <small>Görüşme sağlandı</small>
+          </button>
+
+          <button class="stat-card" type="button" data-filter="closed">
+            <div class="stat-card__top">
+              <span>KAPATILDI</span>
+
+              <span class="stat-card__dot stat-card__dot--closed"></span>
+            </div>
+
+            <strong id="count-closed">0</strong>
+            <small>Süreci tamamlandı</small>
+          </button>
+        </section>
+
+        <!-- TOOLBAR -->
+        <section class="admin-toolbar">
+          <div class="admin-search">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+
+              <path d="M16.5 16.5 21 21"></path>
+            </svg>
+
+            <input
+              id="search-input"
+              type="search"
+              placeholder="İsim, firma, e-posta, mesaj veya not ara..."
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="admin-toolbar__meta">
+            <button
+              id="unread-counter"
+              class="toolbar-counter toolbar-counter--button"
+              type="button"
+            >
+              <span class="toolbar-counter__dot toolbar-counter__dot--unread"
+              ></span>
+
+              <strong id="unread-count">0</strong>
+              <span>okunmamış</span>
+            </button>
+
+            <button
+              id="follow-up-filter"
+              class="toolbar-counter toolbar-counter--button"
+              type="button"
+            >
+              <span class="toolbar-counter__dot toolbar-counter__dot--follow"
+              ></span>
+
+              <strong id="follow-up-count">0</strong>
+              <span>takip</span>
+            </button>
+
+            <button
+              id="archive-filter"
+              class="toolbar-counter toolbar-counter--button"
+              type="button"
+            >
+              <span class="toolbar-counter__archive-icon" aria-hidden="true">
+                □
+              </span>
+
+              <strong id="archive-count">0</strong>
+              <span>arşiv</span>
+            </button>
+
+            <div class="admin-toolbar__result">
+              <span id="result-count">0</span>
+              <span>kayıt</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- LIST -->
+        <section class="requests-section">
+          <div class="requests-header">
+            <span>TALEP</span>
+            <span>KONU</span>
+            <span>TARİH</span>
+            <span>DURUM</span>
+          </div>
+
+          <div id="requests-list" class="requests-list"></div>
+
+          <div id="requests-loading" class="requests-loading">
+            <div class="requests-loading__spinner"></div>
+            Talepler yükleniyor...
+          </div>
+
+          <div id="requests-empty" class="requests-empty" hidden>
+            <div class="requests-empty__icon">↗</div>
+
+            <h2>Talep bulunamadı</h2>
+
+            <p>
+              Bu filtre veya arama için gösterilecek iletişim talebi bulunmuyor.
+            </p>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- DETAIL -->
+    <div id="detail-overlay" class="detail-overlay" hidden>
+      <button
+        id="detail-overlay-close"
+        class="detail-overlay__backdrop"
+        type="button"
+        aria-label="Detay panelini kapat"></button>
+
+      <aside class="detail-panel" aria-label="İletişim talebi detayı">
+        <div class="detail-panel__header">
+          <div>
+            <div class="detail-panel__heading">
+              <span class="detail-panel__eyebrow"> İLETİŞİM TALEBİ </span>
+
+              <span id="detail-read-state" class="detail-panel__read-state">
+                Okundu
+              </span>
+
+              <span
+                id="detail-archive-state"
+                class="detail-panel__archive-state"
+                hidden
+              >
+                Arşivde
+              </span>
+            </div>
+
+            <span id="detail-id" class="detail-panel__id"></span>
+          </div>
+
+          <button
+            id="detail-close"
+            class="detail-panel__close"
+            type="button"
+            aria-label="Kapat"
+          >
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+
+        <div id="detail-content" class="detail-panel__content"></div>
+
+        <div class="detail-panel__footer">
+          <div id="detail-status-wrapper" class="detail-panel__status">
+            <span class="detail-panel__label"> DURUM </span>
+
+            <div class="detail-status-options">
+              <button type="button" data-status="new"> Yeni </button>
+
+              <button type="button" data-status="contacted">
+                İletişime Geçildi
+              </button>
+
+              <button type="button" data-status="closed"> Kapatıldı </button>
+            </div>
+
+            <div id="detail-status-message" class="detail-status-message"></div>
+          </div>
+
+          <div class="detail-archive-action">
+            <button
+              id="archive-toggle-button"
+              class="archive-toggle"
+              type="button"
+            >
+              Arşivle
+            </button>
+
+            <span id="archive-message" class="archive-message"></span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { startAdminSessionGuard } from "../../lib/admin-auth";
+import { supabase } from "../../lib/supabase";
+
+  type SubmissionStatus = "new" | "contacted" | "closed";
+
+  type SubmissionSubject = "products" | "corporate" | "technical" | "other";
+
+  type FilterType =
+    | "all"
+    | SubmissionStatus
+    | "follow_up"
+    | "archived"
+    | "unread"
+    | "today"
+    | "overdue";
+
+  interface ContactSubmission {
+    id: string;
+    full_name: string;
+    email: string;
+    phone: string | null;
+    company: string | null;
+    subject: SubmissionSubject;
+    message: string;
+    status: SubmissionStatus;
+
+    is_read: boolean;
+    read_at: string | null;
+
+    admin_note: string | null;
+    follow_up_at: string | null;
+    updated_at: string;
+
+    archived_at: string | null;
+    archived_by: string | null;
+
+    created_at: string;
+  }
+
+  const subjectLabels: Record<SubmissionSubject, string> = {
+    products: "Seizma ürünleri",
+    corporate: "Kurumsal çözüm",
+    technical: "Teknik bilgi",
+    other: "Diğer",
+  };
+
+  const statusLabels: Record<SubmissionStatus, string> = {
+    new: "Yeni",
+    contacted: "İletişime Geçildi",
+    closed: "Kapatıldı",
+  };
+
+  let submissions: ContactSubmission[] = [];
+
+  let currentFilter: FilterType = "all";
+
+  let currentSearch = "";
+
+  let selectedSubmission: ContactSubmission | null = null;
+
+  let currentAdminUserId: string | null = null;
+
+  /*
+   * ELEMENTS
+   */
+
+  const adminLoading = document.querySelector<HTMLElement>("#admin-loading");
+
+  const adminContent = document.querySelector<HTMLElement>("#admin-content");
+
+  const requestsList = document.querySelector<HTMLElement>("#requests-list");
+
+  const requestsLoading =
+    document.querySelector<HTMLElement>("#requests-loading");
+
+  const requestsEmpty = document.querySelector<HTMLElement>("#requests-empty");
+
+  const totalCount = document.querySelector<HTMLElement>("#total-count");
+
+  const resultCount = document.querySelector<HTMLElement>("#result-count");
+
+  const unreadCount = document.querySelector<HTMLElement>("#unread-count");
+
+  const unreadCounter =
+    document.querySelector<HTMLButtonElement>("#unread-counter");
+
+  const followUpCount = document.querySelector<HTMLElement>("#follow-up-count");
+
+  const followUpFilter =
+    document.querySelector<HTMLButtonElement>("#follow-up-filter");
+
+  const archiveCount = document.querySelector<HTMLElement>("#archive-count");
+
+  const archiveFilter =
+    document.querySelector<HTMLButtonElement>("#archive-filter");
+
+  const countAll = document.querySelector<HTMLElement>("#count-all");
+
+  const countNew = document.querySelector<HTMLElement>("#count-new");
+
+  const countContacted =
+    document.querySelector<HTMLElement>("#count-contacted");
+
+  const countClosed = document.querySelector<HTMLElement>("#count-closed");
+
+  const searchInput = document.querySelector<HTMLInputElement>("#search-input");
+
+  const logoutButton =
+    document.querySelector<HTMLButtonElement>("#logout-button");
+
+  const detailOverlay = document.querySelector<HTMLElement>("#detail-overlay");
+
+  const detailContent = document.querySelector<HTMLElement>("#detail-content");
+
+  const detailId = document.querySelector<HTMLElement>("#detail-id");
+
+  const detailReadState =
+    document.querySelector<HTMLElement>("#detail-read-state");
+
+  const detailArchiveState = document.querySelector<HTMLElement>(
+    "#detail-archive-state",
+  );
+
+  const detailClose =
+    document.querySelector<HTMLButtonElement>("#detail-close");
+
+  const detailOverlayClose = document.querySelector<HTMLButtonElement>(
+    "#detail-overlay-close",
+  );
+
+  const detailStatusMessage = document.querySelector<HTMLElement>(
+    "#detail-status-message",
+  );
+
+  const detailStatusWrapper = document.querySelector<HTMLElement>(
+    "#detail-status-wrapper",
+  );
+
+  const archiveToggleButton = document.querySelector<HTMLButtonElement>(
+    "#archive-toggle-button",
+  );
+
+  const archiveMessage =
+    document.querySelector<HTMLElement>("#archive-message");
+
+  /*
+   * HELPERS
+   */
+
+  const escapeHtml = (value: string) => {
+    return value
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  };
+
+  const escapeAttribute = (value: string) => escapeHtml(value);
+
+  const isArchived = (item: ContactSubmission) => Boolean(item.archived_at);
+
+  const getActiveSubmissions = () => {
+    return submissions.filter((item) => !isArchived(item));
+  };
+
+  const getArchivedSubmissions = () => {
+    return submissions.filter(isArchived);
+  };
+
+  const isActiveFollowUp = (item: ContactSubmission) => {
+    return Boolean(
+      !isArchived(item) && item.follow_up_at && item.status !== "closed",
+    );
+  };
+
+  const isOverdue = (item: ContactSubmission) => {
+    if (!isActiveFollowUp(item) || !item.follow_up_at) {
+      return false;
+    }
+
+    return new Date(item.follow_up_at).getTime() < Date.now();
+  };
+
+  const validFilters: FilterType[] = [
+    "all",
+    "new",
+    "contacted",
+    "closed",
+    "follow_up",
+    "archived",
+    "unread",
+    "today",
+    "overdue",
+  ];
+
+  const isToday = (item: ContactSubmission) => {
+    if (isArchived(item)) {
+      return false;
+    }
+
+    const date = new Date(item.created_at);
+
+    const now = new Date();
+
+    return (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate()
+    );
+  };
+
+  const updateBrowserUrl = (requestId: string | null = null) => {
+    const url = new URL(window.location.href);
+
+    if (currentFilter === "all") {
+      url.searchParams.delete("filter");
+    } else {
+      url.searchParams.set("filter", currentFilter);
+    }
+
+    if (requestId) {
+      url.searchParams.set("request", requestId);
+    } else {
+      url.searchParams.delete("request");
+    }
+
+    window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+  };
+
+  /*
+   * DATE
+   */
+
+  const formatDate = (date: string) => {
+    return new Intl.DateTimeFormat("tr-TR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(date));
+  };
+
+  const shortDate = (date: string) => {
+    return new Intl.DateTimeFormat("tr-TR", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(date));
+  };
+
+  const toDateTimeLocalValue = (date: string | null) => {
+    if (!date) {
+      return "";
+    }
+
+    const value = new Date(date);
+
+    const pad = (number: number) => String(number).padStart(2, "0");
+
+    return [
+      value.getFullYear(),
+      "-",
+      pad(value.getMonth() + 1),
+      "-",
+      pad(value.getDate()),
+      "T",
+      pad(value.getHours()),
+      ":",
+      pad(value.getMinutes()),
+    ].join("");
+  };
+
+  /*
+   * AUTH
+   */
+
+  const redirectToLogin = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+
+    window.location.replace("/admin");
+  };
+
+  const checkAuth = async () => {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      await redirectToLogin();
+      return false;
+    }
+
+    const { data: admin, error: adminError } = await supabase
+      .from("admin_users")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (adminError) {
+      console.error("Admin authorization error:", adminError);
+
+      throw adminError;
+    }
+
+    if (!admin) {
+      await redirectToLogin();
+      return false;
+    }
+
+    currentAdminUserId = user.id;
+
+    return true;
+  };
+
+  /*
+   * LOAD
+   */
+
+  const loadSubmissions = async () => {
+    requestsLoading?.removeAttribute("hidden");
+
+    const { data, error } = await supabase
+      .from("contact_submissions")
+      .select(
+        `
+          id,
+          full_name,
+          email,
+          phone,
+          company,
+          subject,
+          message,
+          status,
+          is_read,
+          read_at,
+          admin_note,
+          follow_up_at,
+          updated_at,
+          archived_at,
+          archived_by,
+          created_at
+        `,
+      )
+      .order("created_at", {
+        ascending: false,
+      });
+
+    requestsLoading?.setAttribute("hidden", "");
+
+    if (error) {
+      console.error("Contact submissions error:", error);
+
+      if (requestsEmpty) {
+        requestsEmpty.hidden = false;
+
+        const title = requestsEmpty.querySelector("h2");
+
+        const description = requestsEmpty.querySelector("p");
+
+        if (title) {
+          title.textContent = "Talepler yüklenemedi";
+        }
+
+        if (description) {
+          description.textContent = "Veriler alınırken bir hata oluştu.";
+        }
+      }
+
+      return;
+    }
+
+    submissions = (data ?? []) as ContactSubmission[];
+
+    updateStats();
+    renderSubmissions();
+  };
+
+  /*
+   * STATS
+   */
+
+  const updateStats = () => {
+    const active = getActiveSubmissions();
+
+    const archived = getArchivedSubmissions();
+
+    const newCount = active.filter((item) => item.status === "new").length;
+
+    const contactedCount = active.filter(
+      (item) => item.status === "contacted",
+    ).length;
+
+    const closedCount = active.filter(
+      (item) => item.status === "closed",
+    ).length;
+
+    const unread = active.filter((item) => !item.is_read).length;
+
+    const followUps = active.filter(isActiveFollowUp).length;
+
+    if (totalCount) {
+      totalCount.textContent = String(active.length);
+    }
+
+    if (countAll) {
+      countAll.textContent = String(active.length);
+    }
+
+    if (countNew) {
+      countNew.textContent = String(newCount);
+    }
+
+    if (countContacted) {
+      countContacted.textContent = String(contactedCount);
+    }
+
+    if (countClosed) {
+      countClosed.textContent = String(closedCount);
+    }
+
+    if (unreadCount) {
+      unreadCount.textContent = String(unread);
+    }
+
+    if (followUpCount) {
+      followUpCount.textContent = String(followUps);
+    }
+
+    if (archiveCount) {
+      archiveCount.textContent = String(archived.length);
+    }
+
+    unreadCounter?.classList.toggle("toolbar-counter--empty", unread === 0);
+
+    followUpFilter?.classList.toggle("toolbar-counter--empty", followUps === 0);
+
+    archiveFilter?.classList.toggle(
+      "toolbar-counter--empty",
+      archived.length === 0,
+    );
+  };
+
+  /*
+   * FILTER
+   */
+
+  const getFilteredSubmissions = () => {
+    const search = currentSearch.toLocaleLowerCase("tr-TR").trim();
+
+    const filtered = submissions.filter((item) => {
+      let matchesFilter = true;
+
+      switch (currentFilter) {
+        case "archived":
+          matchesFilter = isArchived(item);
+
+          break;
+
+        case "follow_up":
+          matchesFilter = isActiveFollowUp(item);
+
+          break;
+
+        case "overdue":
+          matchesFilter = isOverdue(item);
+
+          break;
+
+        case "unread":
+          matchesFilter = !isArchived(item) && !item.is_read;
+
+          break;
+
+        case "today":
+          matchesFilter = isToday(item);
+
+          break;
+
+        case "new":
+        case "contacted":
+        case "closed":
+          matchesFilter = !isArchived(item) && item.status === currentFilter;
+
+          break;
+
+        case "all":
+        default:
+          matchesFilter = !isArchived(item);
+
+          break;
+      }
+
+      if (!matchesFilter) {
+        return false;
+      }
+
+      if (!search) {
+        return true;
+      }
+
+      const searchable = [
+        item.full_name,
+        item.email,
+        item.phone ?? "",
+        item.company ?? "",
+        item.message,
+        item.admin_note ?? "",
+        subjectLabels[item.subject],
+      ]
+        .join(" ")
+        .toLocaleLowerCase("tr-TR");
+
+      return searchable.includes(search);
+    });
+
+    if (currentFilter === "archived") {
+      return filtered.sort(
+        (a, b) =>
+          new Date(b.archived_at ?? b.updated_at).getTime() -
+          new Date(a.archived_at ?? a.updated_at).getTime(),
+      );
+    }
+
+    if (currentFilter === "overdue") {
+      return filtered.sort(
+        (a, b) =>
+          new Date(a.follow_up_at!).getTime() -
+          new Date(b.follow_up_at!).getTime(),
+      );
+    }
+
+    return filtered;
+  };
+
+  const setFilter = (filter: FilterType, syncUrl = true) => {
+    currentFilter = filter;
+
+    document.querySelectorAll("[data-filter]").forEach((item) => {
+      item.classList.remove("stat-card--active");
+    });
+
+    unreadCounter?.classList.remove("toolbar-counter--active");
+
+    followUpFilter?.classList.remove("toolbar-counter--active");
+
+    archiveFilter?.classList.remove("toolbar-counter--active");
+
+    if (filter === "unread") {
+      unreadCounter?.classList.add("toolbar-counter--active");
+    } else if (filter === "follow_up" || filter === "overdue") {
+      followUpFilter?.classList.add("toolbar-counter--active");
+    } else if (filter === "archived") {
+      archiveFilter?.classList.add("toolbar-counter--active");
+    } else if (
+      filter === "all" ||
+      filter === "new" ||
+      filter === "contacted" ||
+      filter === "closed"
+    ) {
+      document
+        .querySelector(`[data-filter="${filter}"]`)
+        ?.classList.add("stat-card--active");
+    }
+
+    renderSubmissions();
+
+    if (syncUrl) {
+      updateBrowserUrl();
+    }
+  };
+
+  /*
+   * LIST
+   */
+
+  const renderSubmissions = () => {
+    if (!requestsList) {
+      return;
+    }
+
+    const filtered = getFilteredSubmissions();
+
+    if (resultCount) {
+      resultCount.textContent = String(filtered.length);
+    }
+
+    requestsList.innerHTML = "";
+
+    if (filtered.length === 0) {
+      if (requestsEmpty) {
+        requestsEmpty.hidden = false;
+
+        const title = requestsEmpty.querySelector("h2");
+
+        const text = requestsEmpty.querySelector("p");
+
+        if (currentFilter === "archived") {
+          if (title) {
+            title.textContent = "Arşiv boş";
+          }
+
+          if (text) {
+            text.textContent =
+              "Henüz arşivlenmiş bir iletişim talebi bulunmuyor.";
+          }
+        } else {
+          if (title) {
+            title.textContent = "Talep bulunamadı";
+          }
+
+          if (text) {
+            text.textContent =
+              "Bu filtre veya arama için gösterilecek iletişim talebi bulunmuyor.";
+          }
+        }
+      }
+
+      return;
+    }
+
+    if (requestsEmpty) {
+      requestsEmpty.hidden = true;
+    }
+
+    filtered.forEach((item) => {
+      const button = document.createElement("button");
+
+      button.type = "button";
+
+      button.className = [
+        "request-row",
+
+        !item.is_read && !isArchived(item) ? "request-row--unread" : "",
+
+        isArchived(item) ? "request-row--archived" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      const company = item.company
+        ? `
+                <span>
+                  ${escapeHtml(item.company)}
+                </span>
+              `
+        : "";
+
+      const unreadLabel =
+        !item.is_read && !isArchived(item)
+          ? `
+                <span
+                  class="request-row__unread-label"
+                >
+                  YENİ
+                </span>
+              `
+          : "";
+
+      const archiveLabel = isArchived(item)
+        ? `
+                <span
+                  class="request-row__archive-label"
+                >
+                  ARŞİV
+                </span>
+              `
+        : "";
+
+      const followUp =
+        isActiveFollowUp(item) && item.follow_up_at
+          ? `
+                <span
+                  class="
+                    request-row__follow-up
+                    ${isOverdue(item) ? "request-row__follow-up--overdue" : ""}
+                  "
+                >
+                  ↳ Takip:
+                  ${escapeHtml(shortDate(item.follow_up_at))}
+                </span>
+              `
+          : "";
+
+      const displayDate =
+        isArchived(item) && item.archived_at
+          ? `
+                <span>
+                  ${escapeHtml(shortDate(item.archived_at))}
+                </span>
+
+                <small>
+                  arşivlendi
+                </small>
+              `
+          : escapeHtml(shortDate(item.created_at));
+
+      button.innerHTML = `
+            <div class="request-row__person">
+              <div class="request-row__avatar">
+                ${escapeHtml(item.full_name.charAt(0).toUpperCase())}
+
+                ${
+                  !item.is_read && !isArchived(item)
+                    ? `
+                      <span
+                        class="request-row__unread-dot"
+                      ></span>
+                    `
+                    : ""
+                }
+              </div>
+
+              <div class="request-row__person-info">
+                <div class="request-row__name">
+                  <strong>
+                    ${escapeHtml(item.full_name)}
+                  </strong>
+
+                  ${unreadLabel}
+                  ${archiveLabel}
+                </div>
+
+                <span>
+                  ${escapeHtml(item.email)}
+                </span>
+
+                ${company}
+              </div>
+            </div>
+
+            <div class="request-row__subject">
+              <span>
+                ${escapeHtml(subjectLabels[item.subject])}
+              </span>
+
+              ${followUp}
+            </div>
+
+            <div class="request-row__date">
+              ${displayDate}
+            </div>
+
+            <div class="request-row__status">
+              <span
+                class="
+                  status-badge
+                  status-badge--${escapeAttribute(item.status)}
+                "
+              >
+                <span></span>
+
+                ${escapeHtml(statusLabels[item.status])}
+              </span>
+
+              <span class="request-row__arrow">
+                →
+              </span>
+            </div>
+          `;
+
+      button.addEventListener("click", () => {
+        openDetail(item.id);
+      });
+
+      requestsList.appendChild(button);
+    });
+  };
+
+  /*
+   * READ
+   */
+
+  const markAsRead = async (id: string) => {
+    const item = submissions.find((submission) => submission.id === id);
+
+    if (!item || item.is_read || isArchived(item)) {
+      return;
+    }
+
+    const readAt = new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from("contact_submissions")
+      .update({
+        is_read: true,
+        read_at: readAt,
+      })
+      .eq("id", id)
+      .select("is_read, read_at, updated_at")
+      .single();
+
+    if (error) {
+      console.error("Read status error:", error);
+
+      return;
+    }
+
+    submissions = submissions.map((submission) =>
+      submission.id === id
+        ? {
+            ...submission,
+            is_read: data.is_read,
+            read_at: data.read_at,
+            updated_at: data.updated_at,
+          }
+        : submission,
+    );
+
+    if (selectedSubmission?.id === id) {
+      selectedSubmission = {
+        ...selectedSubmission,
+        is_read: data.is_read,
+        read_at: data.read_at,
+        updated_at: data.updated_at,
+      };
+
+      renderDetailContent();
+    }
+
+    updateStats();
+    renderSubmissions();
+    updateDetailState();
+  };
+
+  /*
+   * DETAIL STATE
+   */
+
+  const updateDetailState = () => {
+    if (!selectedSubmission) {
+      return;
+    }
+
+    const archived = isArchived(selectedSubmission);
+
+    if (detailReadState) {
+      detailReadState.textContent = selectedSubmission.is_read
+        ? "Okundu"
+        : "Yeni mesaj";
+
+      detailReadState.classList.toggle(
+        "detail-panel__read-state--unread",
+        !selectedSubmission.is_read && !archived,
+      );
+    }
+
+    if (detailArchiveState) {
+      detailArchiveState.hidden = !archived;
+    }
+
+    if (detailStatusWrapper) {
+      detailStatusWrapper.classList.toggle(
+        "detail-panel__status--disabled",
+        archived,
+      );
+    }
+
+    document
+      .querySelectorAll<HTMLButtonElement>(".detail-status-options button")
+      .forEach((button) => {
+        button.disabled = archived;
+
+        button.classList.toggle(
+          "detail-status-option--active",
+          button.dataset.status === selectedSubmission?.status,
+        );
+      });
+
+    if (archiveToggleButton) {
+      archiveToggleButton.textContent = archived
+        ? "Arşivden Çıkar"
+        : "Talebi Arşivle";
+
+      archiveToggleButton.classList.toggle("archive-toggle--restore", archived);
+    }
+
+    if (archiveMessage) {
+      archiveMessage.textContent =
+        archived && selectedSubmission.archived_at
+          ? `Arşivlenme: ${formatDate(selectedSubmission.archived_at)}`
+          : "";
+    }
+  };
+
+  /*
+   * DETAIL CONTENT
+   */
+
+  const bindDetailActions = () => {
+    const saveButton = document.querySelector<HTMLButtonElement>(
+      "#detail-save-button",
+    );
+
+    const clearFollowUp =
+      document.querySelector<HTMLButtonElement>("#clear-follow-up");
+
+    const followUpInput =
+      document.querySelector<HTMLInputElement>("#follow-up-at");
+
+    saveButton?.addEventListener("click", () => {
+      void saveOperationalData();
+    });
+
+    clearFollowUp?.addEventListener("click", () => {
+      if (followUpInput) {
+        followUpInput.value = "";
+      }
+    });
+  };
+
+  const renderDetailContent = () => {
+    if (!selectedSubmission || !detailContent) {
+      return;
+    }
+
+    const item = selectedSubmission;
+
+    const archived = isArchived(item);
+
+    detailContent.innerHTML = `
+        ${
+          archived
+            ? `
+              <div class="detail-archive-notice">
+                <strong>
+                  Bu talep arşivde.
+                </strong>
+
+                <span>
+                  Arşivdeki talepler üzerinde durum, not ve takip değişikliği yapılamaz.
+                </span>
+              </div>
+            `
+            : ""
+        }
+
+        <div class="detail-person">
+          <div class="detail-person__avatar">
+            ${escapeHtml(item.full_name.charAt(0).toUpperCase())}
+          </div>
+
+          <div>
+            <h2>
+              ${escapeHtml(item.full_name)}
+            </h2>
+
+            ${
+              item.company
+                ? `
+                  <p>
+                    ${escapeHtml(item.company)}
+                  </p>
+                `
+                : ""
+            }
+          </div>
+        </div>
+
+        <div class="detail-meta-grid">
+          <div class="detail-meta">
+            <span>E-POSTA</span>
+
+            <a
+              href="mailto:${escapeAttribute(item.email)}"
+            >
+              ${escapeHtml(item.email)}
+            </a>
+          </div>
+
+          <div class="detail-meta">
+            <span>TELEFON</span>
+
+            ${
+              item.phone
+                ? `
+                  <a
+                    href="tel:${escapeAttribute(item.phone)}"
+                  >
+                    ${escapeHtml(item.phone)}
+                  </a>
+                `
+                : `
+                  <p>
+                    Belirtilmedi
+                  </p>
+                `
+            }
+          </div>
+
+          <div class="detail-meta">
+            <span>KONU</span>
+
+            <p>
+              ${escapeHtml(subjectLabels[item.subject])}
+            </p>
+          </div>
+
+          <div class="detail-meta">
+            <span>GELİŞ TARİHİ</span>
+
+            <p>
+              ${escapeHtml(formatDate(item.created_at))}
+            </p>
+          </div>
+
+          <div class="detail-meta">
+            <span>SON İŞLEM</span>
+
+            <p>
+              ${escapeHtml(formatDate(item.updated_at))}
+            </p>
+          </div>
+
+          <div class="detail-meta">
+            <span>OKUNMA</span>
+
+            <p>
+              ${
+                item.read_at
+                  ? escapeHtml(formatDate(item.read_at))
+                  : "Henüz okunmadı"
+              }
+            </p>
+          </div>
+
+          ${
+            item.archived_at
+              ? `
+                <div class="detail-meta">
+                  <span>ARŞİVLENME</span>
+
+                  <p>
+                    ${escapeHtml(formatDate(item.archived_at))}
+                  </p>
+                </div>
+              `
+              : ""
+          }
+        </div>
+
+        <div class="detail-message">
+          <span>MESAJ</span>
+
+          <p>
+            ${escapeHtml(item.message)}
+          </p>
+        </div>
+
+        <div class="detail-operations">
+          <div class="detail-operation">
+            <label for="admin-note">
+              YÖNETİCİ NOTU
+            </label>
+
+            <textarea
+              id="admin-note"
+              maxlength="4000"
+              rows="5"
+              placeholder="Müşteriyle yapılan görüşme veya sonraki adımla ilgili not ekleyin..."
+              ${archived ? "disabled" : ""}
+            >${escapeHtml(item.admin_note ?? "")}</textarea>
+          </div>
+
+          <div class="detail-operation">
+            <label for="follow-up-at">
+              GERİ DÖNÜŞ / TAKİP TARİHİ
+            </label>
+
+            <input
+              id="follow-up-at"
+              type="datetime-local"
+              value="${escapeAttribute(
+                toDateTimeLocalValue(item.follow_up_at),
+              )}"
+              ${archived ? "disabled" : ""}
+            />
+
+            ${
+              item.follow_up_at && item.status !== "closed"
+                ? `
+                  <div
+                    class="
+                      detail-follow-up-info
+                      ${isOverdue(item) ? "detail-follow-up-info--overdue" : ""}
+                    "
+                  >
+                    ${
+                      isOverdue(item) ? "Takip zamanı geçti" : "Planlanan takip"
+                    }
+                    ·
+                    ${escapeHtml(formatDate(item.follow_up_at))}
+                  </div>
+                `
+                : ""
+            }
+          </div>
+
+          <div class="detail-operation__actions">
+            <button
+              id="clear-follow-up"
+              class="detail-operation__clear"
+              type="button"
+              ${archived ? "disabled" : ""}
+            >
+              Takip Tarihini Temizle
+            </button>
+
+            <button
+              id="detail-save-button"
+              class="detail-operation__save"
+              type="button"
+              ${archived ? "disabled" : ""}
+            >
+              <span>
+                Değişiklikleri Kaydet
+              </span>
+
+              <span>↗</span>
+            </button>
+          </div>
+
+          <div
+            id="detail-save-message"
+            class="detail-save-message"
+          ></div>
+        </div>
+      `;
+
+    bindDetailActions();
+  };
+
+  const openDetail = (id: string, syncUrl = true) => {
+    selectedSubmission = submissions.find((item) => item.id === id) ?? null;
+
+    if (!selectedSubmission || !detailOverlay) {
+      return;
+    }
+
+    if (detailId) {
+      detailId.textContent = `#${selectedSubmission.id
+        .slice(0, 8)
+        .toUpperCase()}`;
+    }
+
+    if (detailStatusMessage) {
+      detailStatusMessage.textContent = "";
+    }
+
+    renderDetailContent();
+    updateDetailState();
+    if (syncUrl) {
+      updateBrowserUrl(id);
+    }
+    detailOverlay.hidden = false;
+
+    requestAnimationFrame(() => {
+      detailOverlay.classList.add("detail-overlay--open");
+    });
+
+    document.body.style.overflow = "hidden";
+
+    if (!selectedSubmission.is_read && !isArchived(selectedSubmission)) {
+      void markAsRead(selectedSubmission.id);
+    }
+  };
+
+  const closeDetail = (syncUrl = true) => {
+    if (!detailOverlay) {
+      return;
+    }
+
+    detailOverlay.classList.remove("detail-overlay--open");
+
+    document.body.style.overflow = "";
+
+    setTimeout(() => {
+      detailOverlay.hidden = true;
+
+      selectedSubmission = null;
+      if (syncUrl) {
+        updateBrowserUrl("");
+      }
+    }, 250);
+  };
+
+  /*
+   * NOTE / FOLLOW UP
+   */
+
+  const saveOperationalData = async () => {
+    if (!selectedSubmission || isArchived(selectedSubmission)) {
+      return;
+    }
+
+    const noteInput =
+      document.querySelector<HTMLTextAreaElement>("#admin-note");
+
+    const followUpInput =
+      document.querySelector<HTMLInputElement>("#follow-up-at");
+
+    const saveButton = document.querySelector<HTMLButtonElement>(
+      "#detail-save-button",
+    );
+
+    const saveMessage = document.querySelector<HTMLElement>(
+      "#detail-save-message",
+    );
+
+    if (!noteInput || !followUpInput) {
+      return;
+    }
+
+    const note = noteInput.value.trim();
+
+    let followUpAt: string | null = null;
+
+    if (followUpInput.value) {
+      const parsed = new Date(followUpInput.value);
+
+      if (Number.isNaN(parsed.getTime())) {
+        if (saveMessage) {
+          saveMessage.textContent = "Takip tarihi geçerli değil.";
+
+          saveMessage.className =
+            "detail-save-message detail-save-message--error";
+        }
+
+        return;
+      }
+
+      followUpAt = parsed.toISOString();
+    }
+
+    if (saveButton) {
+      saveButton.disabled = true;
+
+      const label = saveButton.querySelector("span:first-child");
+
+      if (label) {
+        label.textContent = "Kaydediliyor...";
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("contact_submissions")
+      .update({
+        admin_note: note || null,
+
+        follow_up_at: followUpAt,
+      })
+      .eq("id", selectedSubmission.id)
+      .select("admin_note, follow_up_at, updated_at")
+      .single();
+
+    if (error) {
+      console.error("Save error:", error);
+
+      if (saveButton) {
+        saveButton.disabled = false;
+
+        const label = saveButton.querySelector("span:first-child");
+
+        if (label) {
+          label.textContent = "Değişiklikleri Kaydet";
+        }
+      }
+
+      if (saveMessage) {
+        saveMessage.textContent = "Değişiklikler kaydedilemedi.";
+
+        saveMessage.className =
+          "detail-save-message detail-save-message--error";
+      }
+
+      return;
+    }
+
+    submissions = submissions.map((item) =>
+      item.id === selectedSubmission?.id
+        ? {
+            ...item,
+            admin_note: data.admin_note,
+            follow_up_at: data.follow_up_at,
+            updated_at: data.updated_at,
+          }
+        : item,
+    );
+
+    selectedSubmission = {
+      ...selectedSubmission,
+      admin_note: data.admin_note,
+      follow_up_at: data.follow_up_at,
+      updated_at: data.updated_at,
+    };
+
+    updateStats();
+    renderSubmissions();
+    renderDetailContent();
+
+    const message = document.querySelector<HTMLElement>("#detail-save-message");
+
+    if (message) {
+      message.textContent = "Değişiklikler kaydedildi.";
+
+      message.className = "detail-save-message detail-save-message--success";
+    }
+  };
+
+  /*
+   * STATUS
+   */
+
+  const updateStatus = async (status: SubmissionStatus) => {
+    if (!selectedSubmission || isArchived(selectedSubmission)) {
+      return;
+    }
+
+    const buttons = document.querySelectorAll<HTMLButtonElement>(
+      ".detail-status-options button",
+    );
+
+    buttons.forEach((button) => {
+      button.disabled = true;
+    });
+
+    if (detailStatusMessage) {
+      detailStatusMessage.textContent = "Güncelleniyor...";
+    }
+
+    const { data, error } = await supabase
+      .from("contact_submissions")
+      .update({
+        status,
+      })
+      .eq("id", selectedSubmission.id)
+      .select("status, updated_at")
+      .single();
+
+    if (error) {
+      console.error("Status update error:", error);
+
+      updateDetailState();
+
+      if (detailStatusMessage) {
+        detailStatusMessage.textContent = "Durum güncellenemedi.";
+      }
+
+      return;
+    }
+
+    submissions = submissions.map((item) =>
+      item.id === selectedSubmission?.id
+        ? {
+            ...item,
+            status: data.status,
+            updated_at: data.updated_at,
+          }
+        : item,
+    );
+
+    selectedSubmission = {
+      ...selectedSubmission,
+      status: data.status,
+      updated_at: data.updated_at,
+    };
+
+    updateStats();
+    renderSubmissions();
+    renderDetailContent();
+    updateDetailState();
+
+    if (detailStatusMessage) {
+      detailStatusMessage.textContent = "Durum güncellendi.";
+    }
+  };
+
+  /*
+   * ARCHIVE
+   */
+
+  const toggleArchive = async () => {
+    if (!selectedSubmission) {
+      return;
+    }
+
+    const archived = isArchived(selectedSubmission);
+
+    if (!archived && !currentAdminUserId) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      archived
+        ? "Bu talebi arşivden çıkarmak istediğine emin misin?"
+        : "Bu talebi arşivlemek istediğine emin misin? Kayıt silinmeyecek.",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    if (archiveToggleButton) {
+      archiveToggleButton.disabled = true;
+
+      archiveToggleButton.textContent = archived
+        ? "Arşivden çıkarılıyor..."
+        : "Arşivleniyor...";
+    }
+
+    if (archiveMessage) {
+      archiveMessage.textContent = "";
+    }
+
+    const archiveDate = archived ? null : new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from("contact_submissions")
+      .update({
+        archived_at: archiveDate,
+
+        archived_by: archived ? null : currentAdminUserId,
+      })
+      .eq("id", selectedSubmission.id)
+      .select("archived_at, archived_by, updated_at")
+      .single();
+
+    if (error) {
+      console.error("Archive error:", error);
+
+      if (archiveMessage) {
+        archiveMessage.textContent = archived
+          ? "Arşivden çıkarılamadı."
+          : "Talep arşivlenemedi.";
+      }
+
+      updateDetailState();
+
+      return;
+    }
+
+    submissions = submissions.map((item) =>
+      item.id === selectedSubmission?.id
+        ? {
+            ...item,
+
+            archived_at: data.archived_at,
+
+            archived_by: data.archived_by,
+
+            updated_at: data.updated_at,
+          }
+        : item,
+    );
+
+    selectedSubmission = {
+      ...selectedSubmission,
+
+      archived_at: data.archived_at,
+
+      archived_by: data.archived_by,
+
+      updated_at: data.updated_at,
+    };
+
+    updateStats();
+
+    /*
+     * Arşivlediysek normal filtrede
+     * satır otomatik kaybolur.
+     *
+     * Arşivden çıkardıysak da
+     * Arşiv filtresinden kaybolur.
+     */
+    renderSubmissions();
+
+    renderDetailContent();
+    updateDetailState();
+
+    if (archiveMessage) {
+      archiveMessage.textContent = archived
+        ? "Talep arşivden çıkarıldı."
+        : "Talep arşivlendi.";
+    }
+  };
+
+  /*
+   * FILTER EVENTS
+   */
+
+  document
+    .querySelectorAll<HTMLButtonElement>("[data-filter]")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        setFilter(button.dataset.filter as FilterType);
+      });
+    });
+
+  followUpFilter?.addEventListener("click", () => {
+    setFilter(currentFilter === "follow_up" ? "all" : "follow_up");
+  });
+
+  archiveFilter?.addEventListener("click", () => {
+    setFilter(currentFilter === "archived" ? "all" : "archived");
+  });
+
+  unreadCounter?.addEventListener(
+  "click",
+  () => {
+    setFilter(
+      currentFilter ===
+        "unread"
+        ? "all"
+        : "unread",
+    );
+  },
+);
+
+  /*
+   * SEARCH
+   */
+
+  searchInput?.addEventListener("input", () => {
+    currentSearch = searchInput.value;
+
+    renderSubmissions();
+  });
+
+  /*
+   * STATUS EVENTS
+   */
+
+  document
+    .querySelectorAll<HTMLButtonElement>(".detail-status-options button")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        void updateStatus(button.dataset.status as SubmissionStatus);
+      });
+    });
+
+  /*
+   * ARCHIVE EVENT
+   */
+
+  archiveToggleButton?.addEventListener("click", () => {
+    void toggleArchive();
+  });
+
+  /*
+   * DETAIL
+   */
+
+  detailClose?.addEventListener("click", closeDetail);
+
+    document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && detailOverlay && !detailOverlay.hidden) {
+      closeDetail();
+    }
+  });
+
+  /*
+   * LOGOUT
+   */
+
+  logoutButton?.addEventListener("click", async () => {
+    logoutButton.disabled = true;
+
+    logoutButton.textContent = "Çıkış yapılıyor...";
+
+    await supabase.auth.signOut();
+
+    window.location.replace("/admin");
+  });
+
+  /*
+   * INIT ERROR
+   */
+
+  const showInitializationError = () => {
+    if (!adminLoading) {
+      return;
+    }
+
+    adminLoading.innerHTML = `
+        <div class="admin-init-error">
+          <strong>
+            Yönetim paneli açılamadı.
+          </strong>
+
+          <span>
+            Bağlantı sırasında bir hata oluştu.
+          </span>
+
+          <button
+            id="admin-retry-button"
+            type="button"
+          >
+            Tekrar Dene
+          </button>
+        </div>
+      `;
+
+    document
+      .querySelector<HTMLButtonElement>("#admin-retry-button")
+      ?.addEventListener("click", () => {
+        window.location.reload();
+      });
+  };
+
+  /*
+   * INIT
+   */
+
+  const applyUrlState = () => {
+    const params = new URLSearchParams(window.location.search);
+
+    const filterParam = params.get("filter");
+
+    const requestId = params.get("request");
+
+    const requestedFilter = validFilters.includes(filterParam as FilterType)
+      ? (filterParam as FilterType)
+      : "all";
+
+    setFilter(requestedFilter, false);
+
+    if (!requestId) {
+      return;
+    }
+
+    const exists = submissions.some((item) => item.id === requestId);
+
+    if (!exists) {
+      updateBrowserUrl();
+
+      return;
+    }
+
+    openDetail(requestId, false);
+  };
+
+  const init = async () => {
+    try {
+      const isAuthorized = await checkAuth();
+
+      if (!isAuthorized) {
+        return;
+      }
+
+      startAdminSessionGuard();
+
+      if (adminLoading) {
+        adminLoading.hidden = true;
+      }
+
+      if (adminContent) {
+        adminContent.hidden = false;
+      }
+
+      await loadSubmissions();
+
+      applyUrlState();
+    } catch (error) {
+      console.error("Admin initialization error:", error);
+
+      if (adminContent) {
+        adminContent.hidden = true;
+      }
+
+      if (adminLoading) {
+        adminLoading.hidden = false;
+      }
+
+      showInitializationError();
+    }
+  };
+
+  void init();
+</script>
+
+<style>
+  .admin-page {
+    position: relative;
+    min-height: 100svh;
+    background: #070807;
+  }
+
+  .admin-bg {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+
+    background-size: 64px 64px;
+
+    mask-image: linear-gradient(to bottom, black, transparent 80%);
+  }
+
+  .admin-container {
+    position: relative;
+
+    width: min(calc(100% - 48px), 1240px);
+
+    margin-inline: auto;
+  }
+
+  /*
+   * LOADING
+   */
+
+  .admin-loading {
+    min-height: 100svh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    gap: 16px;
+
+    color: var(--color-text-muted);
+
+    font-size: 12px;
+  }
+
+  .admin-loading[hidden],
+  .admin-content[hidden] {
+    display: none;
+  }
+
+  .admin-loading__spinner,
+  .requests-loading__spinner {
+    width: 22px;
+    height: 22px;
+
+    border: 2px solid rgba(255, 255, 255, 0.08);
+
+    border-top-color: var(--color-accent);
+
+    border-radius: 50%;
+
+    animation: admin-spin 700ms linear infinite;
+  }
+
+  @keyframes admin-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .admin-init-error {
+    width: min(calc(100% - 40px), 420px);
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+    padding: 32px;
+
+    border: 1px solid var(--color-border);
+
+    border-radius: 16px;
+
+    background: var(--color-surface);
+
+    text-align: center;
+  }
+
+  .admin-init-error span {
+    margin-top: 8px;
+
+    color: var(--color-text-muted);
+
+    font-size: 12px;
+  }
+
+  .admin-init-error button {
+    min-height: 42px;
+
+    margin-top: 22px;
+
+    padding: 0 18px;
+
+    border: 0;
+
+    border-radius: 8px;
+
+    background: var(--color-accent);
+
+    color: #070807;
+
+    font-weight: 700;
+
+    cursor: pointer;
+  }
+
+  /*
+   * HEADER
+   */
+
+  .admin-header {
+    position: sticky;
+    z-index: 50;
+    top: 0;
+
+    border-bottom: 1px solid var(--color-border);
+
+    background: rgba(7, 8, 7, 0.88);
+
+    backdrop-filter: blur(18px);
+  }
+
+  .admin-header__inner {
+    min-height: 72px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 24px;
+  }
+
+  .admin-header__brand {
+    display: flex;
+    align-items: center;
+
+    gap: 18px;
+  }
+
+  .admin-logo {
+    font-size: 25px;
+    font-weight: 700;
+
+    letter-spacing: -0.055em;
+  }
+
+  .admin-logo span {
+    color: var(--color-accent);
+  }
+
+  .admin-header__divider {
+    width: 1px;
+    height: 22px;
+
+    background: var(--color-border);
+  }
+
+  .admin-header__label {
+    color: #70736c;
+
+    font-family: var(--font-mono);
+
+    font-size: 9px;
+
+    letter-spacing: 0.12em;
+  }
+
+  .admin-header__actions {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+  }
+
+  .admin-header__site-link,
+  .admin-header__logout {
+    min-height: 38px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 0 14px;
+
+    border: 1px solid var(--color-border);
+
+    border-radius: 8px;
+
+    font-size: 11px;
+  }
+
+  .admin-header__site-link {
+    color: var(--color-text-muted);
+  }
+
+  .admin-header__logout {
+    background: var(--color-surface);
+
+    color: var(--color-text);
+
+    cursor: pointer;
+  }
+
+  /*
+   * HERO
+   */
+
+  .admin-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 40px;
+
+    padding-block: clamp(48px, 6vw, 82px) 38px;
+  }
+
+  .admin-eyebrow {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 16px;
+
+    color: var(--color-text-muted);
+
+    font-family: var(--font-mono);
+
+    font-size: 9px;
+
+    letter-spacing: 0.12em;
+  }
+
+  .admin-eyebrow span {
+    width: 22px;
+    height: 1px;
+
+    background: var(--color-accent);
+  }
+
+  .admin-hero h1 {
+    margin: 0;
+
+    font-size: clamp(42px, 5vw, 68px);
+
+    font-weight: 600;
+
+    line-height: 1;
+
+    letter-spacing: -0.055em;
+  }
+
+  .admin-hero h1 span {
+    color: var(--color-accent);
+  }
+
+  .admin-hero p {
+    max-width: 550px;
+
+    margin-top: 18px;
+
+    color: var(--color-text-muted);
+
+    font-size: 14px;
+
+    line-height: 1.7;
+  }
+
+  .admin-hero__total {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+
+    gap: 6px;
+  }
+
+  .admin-hero__total span {
+    color: #666960;
+
+    font-family: var(--font-mono);
+
+    font-size: 8px;
+  }
+
+  .admin-hero__total strong {
+    color: var(--color-accent);
+
+    font-size: 44px;
+
+    font-weight: 500;
+  }
+
+  /*
+   * STATS
+   */
+
+  .admin-stats {
+    display: grid;
+
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    gap: 10px;
+  }
+
+  .stat-card {
+    min-width: 0;
+
+    padding: 18px;
+
+    border: 1px solid var(--color-border);
+
+    border-radius: 12px;
+
+    background: #0e100d;
+
+    color: inherit;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition: 180ms ease;
+  }
+
+  .stat-card:hover {
+    border-color: rgba(234, 255, 0, 0.2);
+
+    transform: translateY(-2px);
+  }
+
+  .stat-card--active {
+    border-color: rgba(234, 255, 0, 0.3);
+
+    background: rgba(234, 255, 0, 0.025);
+  }
+
+  .stat-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .stat-card__top > span:first-child {
+    color: #74786e;
+
+    font-family: var(--font-mono);
+
+    font-size: 8px;
+
+    letter-spacing: 0.09em;
+  }
+
+  .stat-card__dot {
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: #686b64;
+  }
+
+  .stat-card__dot--new {
+    background: var(--color-accent);
+
+    box-shadow: 0 0 10px rgba(234, 255, 0, 0.3);
+  }
+
+  .stat-card__dot--contacted {
+    background: #b6baa9;
+  }
+
+  .stat-card__dot--closed {
+    background: #5f625a;
+  }
+
+  .stat-card strong {
+    display: block;
+
+    margin-top: 20px;
+
+    font-size: 31px;
+
+    font-weight: 500;
+  }
+
+  .stat-card small {
+    display: block;
+
+    margin-top: 5px;
+
+    color: #696d63;
+
+    font-size: 10px;
+  }
+
+  /*
+   * TOOLBAR
+   */
+
+  .admin-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 24px;
+
+    margin-top: 28px;
+
+    padding-bottom: 14px;
+  }
+
+  .admin-search {
+    position: relative;
+
+    width: min(100%, 420px);
+  }
+
+  .admin-search svg {
+    position: absolute;
+
+    top: 50%;
+    left: 14px;
+
+    width: 17px;
+    height: 17px;
+
+    fill: none;
+    stroke: #666a60;
+    stroke-width: 1.5;
+
+    transform: translateY(-50%);
+  }
+
+  .admin-search input {
+    width: 100%;
+    height: 44px;
+
+    padding: 0 14px 0 42px;
+
+    border: 1px solid var(--color-border);
+
+    border-radius: 9px;
+
+    outline: none;
+
+    background: #0b0c0a;
+
+    color: var(--color-text);
+
+    font-size: 12px;
+  }
+
+  .admin-search input:focus {
+    border-color: rgba(234, 255, 0, 0.4);
+  }
+
+  .admin-search input::placeholder {
+    color: #555950;
+  }
+
+  .admin-toolbar__meta {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+  }
+
+  .toolbar-counter {
+    min-height: 34px;
+
+    display: inline-flex;
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 7px 9px;
+
+    border: 1px solid transparent;
+
+    border-radius: 7px;
+
+    background: transparent;
+
+    color: #92968b;
+
+    font-size: 10px;
+  }
+
+  .toolbar-counter--button {
+    cursor: pointer;
+  }
+
+  .toolbar-counter--button:hover {
+    border-color: var(--color-border);
+
+    background: rgba(255, 255, 255, 0.025);
+  }
+
+  .toolbar-counter--active {
+    border-color: rgba(234, 255, 0, 0.22);
+
+    background: rgba(234, 255, 0, 0.045);
+  }
+
+  .toolbar-counter--active strong {
+    color: var(--color-accent);
+  }
+
+  .toolbar-counter--empty {
+    opacity: 0.45;
+  }
+
+  .toolbar-counter strong {
+    color: var(--color-text);
+
+    font-weight: 600;
+  }
+
+  .toolbar-counter__dot {
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+  }
+
+  .toolbar-counter__dot--unread {
+    background: var(--color-accent);
+  }
+
+  .toolbar-counter__dot--follow {
+    border: 1px solid var(--color-accent);
+  }
+
+  .toolbar-counter__archive-icon {
+    color: #858980;
+
+    font-size: 12px;
+
+    line-height: 1;
+  }
+
+  .admin-toolbar__result {
+    display: flex;
+    align-items: center;
+
+    gap: 5px;
+
+    color: #666a60;
+
+    font-size: 10px;
+  }
+
+  .admin-toolbar__result span:first-child {
+    color: var(--color-text);
+  }
+
+  /*
+   * LIST
+   */
+
+  .requests-section {
+    padding-bottom: 80px;
+  }
+
+  .requests-header {
+    min-height: 38px;
+
+    display: grid;
+
+    grid-template-columns:
+      minmax(280px, 1.5fr)
+      minmax(170px, 0.8fr)
+      minmax(140px, 0.65fr)
+      minmax(170px, 0.7fr);
+
+    align-items: center;
+
+    gap: 18px;
+
+    padding: 0 18px;
+
+    border-top: 1px solid var(--color-border);
+
+    border-bottom: 1px solid var(--color-border);
+
+    color: #62665d;
+
+    font-family: var(--font-mono);
+
+    font-size: 8px;
+  }
+
+  .requests-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .requests-list :global(.request-row) {
+    position: relative;
+
+    width: 100%;
+    min-height: 86px;
+
+    display: grid;
+
+    grid-template-columns:
+      minmax(280px, 1.5fr)
+      minmax(170px, 0.8fr)
+      minmax(140px, 0.65fr)
+      minmax(170px, 0.7fr);
+
+    align-items: center;
+
+    gap: 18px;
+
+    padding: 14px 18px;
+
+    border: 0;
+
+    border-bottom: 1px solid var(--color-border);
+
+    background: transparent;
+
+    color: inherit;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+      background 180ms ease,
+      opacity 180ms ease;
+  }
+
+  .requests-list :global(.request-row:hover) {
+    background: rgba(234, 255, 0, 0.018);
+  }
+
+  .requests-list :global(.request-row--unread) {
+    background: rgba(234, 255, 0, 0.025);
+  }
+
+  .requests-list :global(.request-row--unread::before) {
+    content: "";
+
+    position: absolute;
+
+    inset-block: 0;
+    left: 0;
+
+    width: 2px;
+
+    background: var(--color-accent);
+  }
+
+  .requests-list :global(.request-row--archived) {
+    opacity: 0.62;
+  }
+
+  .requests-list :global(.request-row--archived:hover) {
+    opacity: 0.9;
+  }
+
+  .requests-list :global(.request-row__person) {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+  }
+
+  .requests-list :global(.request-row__avatar) {
+    position: relative;
+
+    width: 38px;
+    height: 38px;
+
+    display: grid;
+    place-items: center;
+
+    flex-shrink: 0;
+
+    border: 1px solid rgba(234, 255, 0, 0.15);
+
+    border-radius: 50%;
+
+    background: rgba(234, 255, 0, 0.035);
+
+    color: var(--color-accent);
+
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .requests-list :global(.request-row__unread-dot) {
+    position: absolute;
+
+    top: -2px;
+    right: -2px;
+
+    width: 8px;
+    height: 8px;
+
+    border: 2px solid #070807;
+
+    border-radius: 50%;
+
+    background: var(--color-accent);
+  }
+
+  .requests-list :global(.request-row__person-info) {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+  }
+
+  .requests-list :global(.request-row__name) {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+  }
+
+  .requests-list :global(.request-row__person-info strong) {
+    overflow: hidden;
+
+    color: var(--color-text);
+
+    font-size: 13px;
+    font-weight: 600;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+  }
+
+  .requests-list
+    :global(.request-row--unread .request-row__person-info strong) {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .requests-list :global(.request-row__unread-label),
+  .requests-list :global(.request-row__archive-label) {
+    flex-shrink: 0;
+
+    padding: 3px 5px;
+
+    border-radius: 4px;
+
+    font-family: var(--font-mono);
+
+    font-size: 7px;
+  }
+
+  .requests-list :global(.request-row__unread-label) {
+    background: rgba(234, 255, 0, 0.08);
+
+    color: var(--color-accent);
+  }
+
+  .requests-list :global(.request-row__archive-label) {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    background: rgba(255, 255, 255, 0.03);
+
+    color: #898c84;
+  }
+
+  .requests-list :global(.request-row__person-info > span) {
+    overflow: hidden;
+
+    color: #74786e;
+
+    font-size: 10px;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+  }
+
+  .requests-list :global(.request-row__subject) {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+
+    color: #9a9d94;
+
+    font-size: 11px;
+  }
+
+  .requests-list :global(.request-row__follow-up) {
+    color: var(--color-accent);
+
+    font-family: var(--font-mono);
+
+    font-size: 8px;
+  }
+
+  .requests-list :global(.request-row__follow-up--overdue) {
+    color: #ff9c77;
+  }
+
+  .requests-list :global(.request-row__date) {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+
+    color: #9a9d94;
+
+    font-size: 11px;
+  }
+
+  .requests-list :global(.request-row__date small) {
+    color: #5e625a;
+
+    font-family: var(--font-mono);
+
+    font-size: 7px;
+  }
+
+  .requests-list :global(.request-row__status) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+  }
+
+  .requests-list :global(.request-row__arrow) {
+    color: #62665d;
+  }
+
+  .requests-list :global(.request-row:hover .request-row__arrow) {
+    color: var(--color-accent);
+  }
+
+  .requests-list :global(.status-badge) {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 6px 9px;
+
+    border: 1px solid var(--color-border);
+
+    border-radius: 100px;
+
+    color: #93978d;
+
+    font-family: var(--font-mono);
+
+    font-size: 8px;
+
+    white-space: nowrap;
+  }
+
+  .requests-list :global(.status-badge > span) {
+    width: 5px;
+    height: 5px;
+
+    border-radius: 50%;
+
+    background: #696c65;
+  }
+
+  .requests-list :global(.status-badge--new > span) {
+    background: var(--color-accent);
+  }
+
+  .requests-list :global(.status-badge--contacted > span) {
+    background: #babdad;
+  }
+
+  /*
+   * EMPTY
+   */
+
+  .requests-loading {
+    min-height: 240px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    gap: 14px;
+
+    color: var(--color-text-muted);
+
+    font-size: 11px;
+  }
+
+  .requests-loading[hidden],
+  .requests-empty[hidden] {
+    display: none;
+  }
+
+  .requests-empty {
+    min-height: 320px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    text-align: center;
+  }
+
+  .requests-empty__icon {
+    width: 44px;
+    height: 44px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid var(--color-border);
+
+    border-radius: 50%;
+
+    color: var(--color-accent);
+  }
+
+  .requests-empty h2 {
+    margin-top: 18px;
+
+    font-size: 18px;
+  }
+
+  .requests-empty p {
+    max-width: 400px;
+
+    margin-top: 8px;
+
+    color: var(--color-text-muted);
+
+    font-size: 12px;
+
+    line-height: 1.6;
+  }
+
+  /*
+   * DETAIL
+   */
+
+  .detail-overlay {
+    position: fixed;
+
+    z-index: 200;
+
+    inset: 0;
+  }
+
+  .detail-overlay[hidden] {
+    display: none;
+  }
+
+  .detail-overlay__backdrop {
+    position: absolute;
+
+    inset: 0;
+
+    border: 0;
+
+    background: rgba(0, 0, 0, 0.62);
+
+    opacity: 0;
+
+    backdrop-filter: blur(4px);
+
+    transition: opacity 250ms ease;
+  }
+
+  .detail-panel {
+    position: absolute;
+
+    top: 0;
+    right: 0;
+
+    width: min(100%, 580px);
+
+    height: 100dvh;
+
+    display: flex;
+    flex-direction: column;
+
+    border-left: 1px solid var(--color-border);
+
+    background: #0c0e0b;
+
+    overflow-y: auto;
+
+    transform: translateX(100%);
+
+    transition: transform 250ms ease;
+  }
+
+  .detail-overlay--open .detail-overlay__backdrop {
+    opacity: 1;
+  }
+
+  .detail-overlay--open .detail-panel {
+    transform: translateX(0);
+  }
+
+  .detail-panel__header {
+    min-height: 76px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 18px 28px;
+
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .detail-panel__heading {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 9px;
+  }
+
+  .detail-panel__eyebrow {
+    color: var(--color-text-muted);
+
+    font-family: var(--font-mono);
+
+    font-size: 8px;
+  }
+
+  .detail-panel__read-state,
+  .detail-panel__archive-state {
+    padding: 3px 6px;
+
+    border-radius: 4px;
+
+    font-family: var(--font-mono);
+
+    font-size: 7px;
+  }
+
+  .detail-panel__read-state {
+    background: rgba(255, 255, 255, 0.04);
+
+    color: #72766c;
+  }
+
+  .detail-panel__read-state--unread {
+    background: rgba(234, 255, 0, 0.08);
+
+    color: var(--color-accent);
+  }
+
+  .detail-panel__archive-state {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    background: rgba(255, 255, 255, 0.035);
+
+    color: #a0a39b;
+  }
+
+  .detail-panel__archive-state[hidden] {
+    display: none;
+  }
+
+  .detail-panel__id {
+    display: block;
+
+    margin-top: 5px;
+
+    color: #555950;
+
+    font-family: var(--font-mono);
+
+    font-size: 8px;
+  }
+
+  .detail-panel__close {
+    position: relative;
+
+    width: 38px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    border: 1px solid var(--color-border);
+
+    border-radius: 8px;
+
+    background: transparent;
+
+    cursor: pointer;
+  }
+
+  .detail-panel__close span {
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 15px;
+    height: 1px;
+
+    background: var(--color-text);
+  }
+
+  .detail-panel__close span:first-child {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .detail-panel__close span:last-child {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  .detail-panel__content {
+    flex: 1;
+
+    padding: 32px 28px;
+  }
+
+  .detail-panel__content :global(.detail-archive-notice) {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+
+    margin-bottom: 24px;
+
+    padding: 13px 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 8px;
+
+    background: rgba(255, 255, 255, 0.025);
+  }
+
+  .detail-panel__content :global(.detail-archive-notice strong) {
+    color: #c3c6bd;
+
+    font-size: 11px;
+  }
+
+  .detail-panel__content :global(.detail-archive-notice span) {
+    color: #777b72;
+
+    font-size: 9px;
+
+    line-height: 1.6;
+  }
+
+  .detail-panel__content :global(.detail-person) {
+    display: flex;
+    align-items: center;
+
+    gap: 16px;
+
+    padding-bottom: 28px;
+
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .detail-panel__content :global(.detail-person__avatar) {
+    width: 52px;
+    height: 52px;
+
+    display: grid;
+    place-items: center;
+
+    flex-shrink: 0;
+
+    border: 1px solid rgba(234, 255, 0, 0.18);
+
+    border-radius: 50%;
+
+    background: rgba(234, 255, 0, 0.035);
+
+    color: var(--color-accent);
+
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  .detail-panel__content :global(.detail-person h2) {
+    margin: 0;
+
+    font-size: 25px;
+
+    font-weight: 600;
+  }
+
+  .detail-panel__content :global(.detail-person p) {
+    margin-top: 4px;
+
+    color: var(--color-text-muted);
+
+    font-size: 12px;
+  }
+
+  .detail-panel__content :global(.detail-meta-grid) {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 22px;
+
+    padding-block: 28px;
+
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .detail-panel__content :global(.detail-meta > span),
+  .detail-panel__content :global(.detail-message > span) {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #666a60;
+
+    font-family: var(--font-mono);
+
+    font-size: 8px;
+  }
+
+  .detail-panel__content :global(.detail-meta a),
+  .detail-panel__content :global(.detail-meta p) {
+    overflow-wrap: anywhere;
+
+    color: #c3c6bd;
+
+    font-size: 12px;
+
+    line-height: 1.6;
+  }
+
+  .detail-panel__content :global(.detail-meta a:hover) {
+    color: var(--color-accent);
+  }
+
+  .detail-panel__content :global(.detail-message) {
+    padding-top: 28px;
+  }
+
+  .detail-panel__content :global(.detail-message p) {
+    color: #b1b4ab;
+
+    font-size: 13px;
+
+    line-height: 1.8;
+
+    white-space: pre-wrap;
+  }
+
+  /*
+   * OPERATIONS
+   */
+
+  .detail-panel__content :global(.detail-operations) {
+    margin-top: 30px;
+
+    padding-top: 30px;
+
+    border-top: 1px solid var(--color-border);
+  }
+
+  .detail-panel__content :global(.detail-operation) {
+    display: flex;
+    flex-direction: column;
+
+    gap: 9px;
+
+    margin-bottom: 20px;
+  }
+
+  .detail-panel__content :global(.detail-operation label) {
+    color: #666a60;
+
+    font-family: var(--font-mono);
+
+    font-size: 8px;
+
+    letter-spacing: 0.08em;
+  }
+
+  .detail-panel__content :global(.detail-operation textarea),
+  .detail-panel__content :global(.detail-operation input) {
+    width: 100%;
+
+    border: 1px solid var(--color-border);
+
+    border-radius: 9px;
+
+    outline: none;
+
+    background: #080a07;
+
+    color: var(--color-text);
+
+    font-family: var(--font-sans);
+
+    font-size: 12px;
+  }
+
+  .detail-panel__content :global(.detail-operation textarea) {
+    min-height: 120px;
+
+    padding: 13px;
+
+    resize: vertical;
+
+    line-height: 1.6;
+  }
+
+  .detail-panel__content :global(.detail-operation input) {
+    height: 46px;
+
+    padding: 0 13px;
+
+    color-scheme: dark;
+  }
+
+  .detail-panel__content :global(.detail-operation textarea:disabled),
+  .detail-panel__content :global(.detail-operation input:disabled) {
+    opacity: 0.45;
+
+    cursor: not-allowed;
+  }
+
+  .detail-panel__content :global(.detail-operation textarea:focus),
+  .detail-panel__content :global(.detail-operation input:focus) {
+    border-color: rgba(234, 255, 0, 0.4);
+  }
+
+  .detail-panel__content :global(.detail-follow-up-info) {
+    width: fit-content;
+
+    padding: 6px 8px;
+
+    border: 1px solid rgba(234, 255, 0, 0.12);
+
+    border-radius: 6px;
+
+    background: rgba(234, 255, 0, 0.035);
+
+    color: var(--color-accent);
+
+    font-family: var(--font-mono);
+
+    font-size: 8px;
+  }
+
+  .detail-panel__content :global(.detail-follow-up-info--overdue) {
+    border-color: rgba(255, 156, 119, 0.2);
+
+    background: rgba(255, 156, 119, 0.04);
+
+    color: #ff9c77;
+  }
+
+  .detail-panel__content :global(.detail-operation__actions) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+  }
+
+  .detail-panel__content :global(.detail-operation__clear),
+  .detail-panel__content :global(.detail-operation__save) {
+    min-height: 44px;
+
+    padding: 0 14px;
+
+    border-radius: 8px;
+
+    font-size: 10px;
+
+    cursor: pointer;
+  }
+
+  .detail-panel__content :global(.detail-operation__clear) {
+    border: 1px solid var(--color-border);
+
+    background: transparent;
+
+    color: var(--color-text-muted);
+  }
+
+  .detail-panel__content :global(.detail-operation__save) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 18px;
+
+    border: 0;
+
+    background: var(--color-accent);
+
+    color: #070807;
+
+    font-weight: 700;
+  }
+
+  .detail-panel__content :global(.detail-operation__save:disabled),
+  .detail-panel__content :global(.detail-operation__clear:disabled) {
+    opacity: 0.4;
+
+    cursor: not-allowed;
+  }
+
+  .detail-panel__content :global(.detail-save-message) {
+    min-height: 16px;
+
+    margin-top: 10px;
+
+    font-size: 9px;
+  }
+
+  .detail-panel__content :global(.detail-save-message--success) {
+    color: var(--color-accent);
+  }
+
+  .detail-panel__content :global(.detail-save-message--error) {
+    color: #ff8b8b;
+  }
+
+  /*
+   * DETAIL FOOTER
+   */
+
+  .detail-panel__footer {
+    position: sticky;
+
+    bottom: 0;
+
+    border-top: 1px solid var(--color-border);
+
+    background: rgba(12, 14, 11, 0.97);
+
+    backdrop-filter: blur(16px);
+  }
+
+  .detail-panel__status {
+    padding: 20px 28px;
+  }
+
+  .detail-panel__status--disabled {
+    opacity: 0.5;
+  }
+
+  .detail-panel__label {
+    display: block;
+
+    margin-bottom: 10px;
+
+    color: #666a60;
+
+    font-family: var(--font-mono);
+
+    font-size: 8px;
+  }
+
+  .detail-status-options {
+    display: grid;
+
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    gap: 7px;
+  }
+
+  .detail-status-options button {
+    min-height: 40px;
+
+    padding: 8px;
+
+    border: 1px solid var(--color-border);
+
+    border-radius: 7px;
+
+    background: #11130f;
+
+    color: #898d83;
+
+    font-size: 9px;
+
+    cursor: pointer;
+  }
+
+  .detail-status-options :global(.detail-status-option--active) {
+    border-color: rgba(234, 255, 0, 0.35);
+
+    background: rgba(234, 255, 0, 0.055);
+
+    color: var(--color-accent);
+  }
+
+  .detail-status-options button:disabled {
+    opacity: 0.5;
+
+    cursor: not-allowed;
+  }
+
+  .detail-status-message {
+    min-height: 14px;
+
+    margin-top: 10px;
+
+    color: var(--color-text-muted);
+
+    font-size: 9px;
+  }
+
+  /*
+   * ARCHIVE BUTTON
+   */
+
+  .detail-archive-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    padding: 14px 28px 24px;
+
+    border-top: 1px solid var(--color-border);
+  }
+
+  .archive-toggle {
+    min-height: 38px;
+
+    padding: 0 13px;
+
+    border: 1px solid rgba(255, 125, 125, 0.18);
+
+    border-radius: 7px;
+
+    background: rgba(255, 90, 90, 0.035);
+
+    color: #da9292;
+
+    font-size: 9px;
+
+    cursor: pointer;
+  }
+
+  .archive-toggle:hover {
+    border-color: rgba(255, 125, 125, 0.32);
+
+    background: rgba(255, 90, 90, 0.065);
+  }
+
+  .archive-toggle--restore {
+    border-color: rgba(234, 255, 0, 0.18);
+
+    background: rgba(234, 255, 0, 0.035);
+
+    color: var(--color-accent);
+  }
+
+  .archive-toggle--restore:hover {
+    border-color: rgba(234, 255, 0, 0.35);
+
+    background: rgba(234, 255, 0, 0.06);
+  }
+
+  .archive-toggle:disabled {
+    opacity: 0.45;
+
+    cursor: not-allowed;
+  }
+
+  .archive-message {
+    color: #6f736a;
+
+    font-family: var(--font-mono);
+
+    font-size: 8px;
+
+    text-align: right;
+  }
+
+  /*
+   * TABLET
+   */
+
+  @media (max-width: 900px) {
+    .admin-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-toolbar {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .admin-search {
+      width: 100%;
+    }
+
+    .admin-toolbar__meta {
+      flex-wrap: wrap;
+    }
+
+    .requests-header {
+      display: none;
+    }
+
+    .requests-list :global(.request-row) {
+      grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+      grid-template-areas:
+        "person status"
+        "subject date";
+
+      gap: 10px 20px;
+
+      padding: 18px 0;
+    }
+
+    .requests-list :global(.request-row__person) {
+      grid-area: person;
+    }
+
+    .requests-list :global(.request-row__subject) {
+      grid-area: subject;
+
+      padding-left: 52px;
+    }
+
+    .requests-list :global(.request-row__date) {
+      grid-area: date;
+
+      text-align: right;
+    }
+
+    .requests-list :global(.request-row__status) {
+      grid-area: status;
+    }
+  }
+
+  /*
+   * MOBILE
+   */
+
+  @media (max-width: 640px) {
+    .admin-container {
+      width: min(calc(100% - 32px), 1240px);
+    }
+
+    .admin-header__inner {
+      min-height: 64px;
+    }
+
+    .admin-header__divider,
+    .admin-header__label,
+    .admin-header__site-link {
+      display: none;
+    }
+
+    .admin-hero {
+      align-items: flex-start;
+
+      flex-direction: column;
+
+      padding-block: 42px 28px;
+    }
+
+    .admin-hero__total {
+      display: none;
+    }
+
+    .admin-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+
+      gap: 7px;
+    }
+
+    .admin-toolbar__meta {
+      gap: 6px;
+    }
+
+    .admin-toolbar__result {
+      margin-left: auto;
+    }
+
+    .requests-list :global(.request-row) {
+      grid-template-columns: minmax(0, 1fr);
+
+      grid-template-areas:
+        "person"
+        "subject"
+        "status";
+
+      gap: 8px;
+
+      padding-block: 18px;
+    }
+
+    .requests-list :global(.request-row__subject) {
+      padding-left: 52px;
+    }
+
+    .requests-list :global(.request-row__date) {
+      display: none;
+    }
+
+    .requests-list :global(.request-row__status) {
+      padding-left: 52px;
+    }
+
+    .requests-list :global(.request-row__arrow) {
+      margin-left: auto;
+    }
+
+    .detail-panel {
+      width: 100%;
+    }
+
+    .detail-panel__header {
+      padding-inline: 20px;
+    }
+
+    .detail-panel__content {
+      padding: 26px 20px;
+    }
+
+    .detail-panel__content :global(.detail-meta-grid) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .detail-panel__content :global(.detail-operation__actions) {
+      align-items: stretch;
+
+      flex-direction: column;
+    }
+
+    .detail-panel__content :global(.detail-operation__clear),
+    .detail-panel__content :global(.detail-operation__save) {
+      width: 100%;
+    }
+
+    .detail-panel__status {
+      padding: 18px 20px;
+    }
+
+    .detail-status-options {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .detail-archive-action {
+      align-items: stretch;
+
+      flex-direction: column;
+
+      padding: 14px 20px max(22px, env(safe-area-inset-bottom));
+    }
+
+    .archive-toggle {
+      width: 100%;
+    }
+
+    .archive-message {
+      text-align: left;
+    }
+  }
+  /* =========================================================
+   ADMIN PANEL - CONTRAST / READABILITY POLISH
+   ========================================================= */
+
+.admin-page {
+  --color-text: #f7f8f4;
+  --color-text-muted: #b4b8ae;
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-surface: #131510;
+
+  background: #090a08;
+}
+
+/* ---------------------------------------------------------
+   HEADER
+   --------------------------------------------------------- */
+
+.admin-header {
+  border-bottom-color: rgba(255, 255, 255, 0.13);
+
+  background:
+    rgba(9, 10, 8, 0.94);
+}
+
+.admin-logo {
+  color: #ffffff;
+}
+
+.admin-header__label {
+  color: #a1a69b;
+}
+
+.admin-header__site-link {
+  color: #c1c5bc;
+
+  background:
+    rgba(255, 255, 255, 0.025);
+}
+
+.admin-header__site-link:hover {
+  color: #ffffff;
+
+  border-color:
+    rgba(234, 255, 0, 0.22);
+}
+
+.admin-header__logout {
+  color: #eeeeea;
+
+  background: #161813;
+}
+
+.admin-header__logout:hover {
+  border-color:
+    rgba(255, 255, 255, 0.2);
+
+  background: #1b1e18;
+}
+
+/* ---------------------------------------------------------
+   PAGE HERO
+   --------------------------------------------------------- */
+
+.admin-eyebrow {
+  color: #adb1a7;
+}
+
+.admin-hero h1 {
+  color: #f8f9f5;
+}
+
+.admin-hero p {
+  color: #b7bbb1;
+}
+
+.admin-hero__total span {
+  color: #969b90;
+}
+
+.admin-hero__total strong {
+  text-shadow:
+    0 0 22px
+    rgba(234, 255, 0, 0.08);
+}
+
+/* ---------------------------------------------------------
+   STAT CARDS
+   --------------------------------------------------------- */
+
+.stat-card {
+  border-color:
+    rgba(255, 255, 255, 0.11);
+
+  background: #11130f;
+}
+
+.stat-card:hover {
+  border-color:
+    rgba(234, 255, 0, 0.28);
+
+  background: #141611;
+}
+
+.stat-card--active {
+  border-color:
+    rgba(234, 255, 0, 0.34);
+
+  background:
+    rgba(234, 255, 0, 0.04);
+}
+
+.stat-card__top
+  > span:first-child {
+  color: #a5aa9f;
+}
+
+.stat-card strong {
+  color: #f5f6f2;
+}
+
+.stat-card small {
+  color: #969b91;
+}
+
+/* ---------------------------------------------------------
+   SEARCH / TOOLBAR
+   --------------------------------------------------------- */
+
+.admin-search svg {
+  stroke: #959a90;
+}
+
+.admin-search input {
+  border-color:
+    rgba(255, 255, 255, 0.12);
+
+  background: #10120e;
+
+  color: #f5f6f2;
+}
+
+.admin-search input::placeholder {
+  color: #858a80;
+}
+
+.admin-search input:focus {
+  border-color:
+    rgba(234, 255, 0, 0.5);
+
+  background: #12140f;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(234, 255, 0, 0.035);
+}
+
+.toolbar-counter {
+  color: #a7aba2;
+}
+
+.toolbar-counter strong {
+  color: #f0f1ed;
+}
+
+.toolbar-counter--button:hover {
+  border-color:
+    rgba(255, 255, 255, 0.13);
+
+  background:
+    rgba(255, 255, 255, 0.04);
+}
+
+.toolbar-counter--active {
+  border-color:
+    rgba(234, 255, 0, 0.28);
+
+  background:
+    rgba(234, 255, 0, 0.06);
+}
+
+.admin-toolbar__result {
+  color: #8f9489;
+}
+
+.admin-toolbar__result
+  span:first-child {
+  color: #e9eae6;
+}
+
+/* ---------------------------------------------------------
+   TABLE HEADER
+   --------------------------------------------------------- */
+
+.requests-header {
+  border-top-color:
+    rgba(255, 255, 255, 0.12);
+
+  border-bottom-color:
+    rgba(255, 255, 255, 0.12);
+
+  color: #969b91;
+}
+
+/* ---------------------------------------------------------
+   REQUEST ROW
+   --------------------------------------------------------- */
+
+.requests-list
+  :global(.request-row) {
+  border-bottom-color:
+    rgba(255, 255, 255, 0.09);
+}
+
+.requests-list
+  :global(.request-row:hover) {
+  background:
+    rgba(255, 255, 255, 0.025);
+}
+
+.requests-list
+  :global(.request-row--unread) {
+  background:
+    rgba(234, 255, 0, 0.035);
+}
+
+.requests-list
+  :global(.request-row__avatar) {
+  border-color:
+    rgba(234, 255, 0, 0.22);
+
+  background:
+    rgba(234, 255, 0, 0.055);
+}
+
+.requests-list
+  :global(
+    .request-row__person-info strong
+  ) {
+  color: #f3f4f0;
+
+  font-weight: 600;
+}
+
+.requests-list
+  :global(
+    .request-row--unread
+    .request-row__person-info
+    strong
+  ) {
+  color: #ffffff;
+
+  font-weight: 700;
+}
+
+.requests-list
+  :global(
+    .request-row__person-info
+    > span
+  ) {
+  color: #9fa49a;
+}
+
+.requests-list
+  :global(
+    .request-row__subject
+  ) {
+  color: #bec2b9;
+}
+
+.requests-list
+  :global(
+    .request-row__date
+  ) {
+  color: #a4a99e;
+}
+
+.requests-list
+  :global(
+    .request-row__date small
+  ) {
+  color: #878c82;
+}
+
+.requests-list
+  :global(
+    .request-row__arrow
+  ) {
+  color: #90958b;
+}
+
+.requests-list
+  :global(
+    .request-row:hover
+    .request-row__arrow
+  ) {
+  color:
+    var(--color-accent);
+}
+
+/* ---------------------------------------------------------
+   STATUS BADGES
+   --------------------------------------------------------- */
+
+.requests-list
+  :global(.status-badge) {
+  border-color:
+    rgba(255, 255, 255, 0.12);
+
+  background:
+    rgba(255, 255, 255, 0.025);
+
+  color: #b6bab1;
+}
+
+.requests-list
+  :global(
+    .status-badge--new
+  ) {
+  border-color:
+    rgba(234, 255, 0, 0.18);
+
+  color: #dceaa5;
+}
+
+.requests-list
+  :global(
+    .status-badge--contacted
+  ) {
+  color: #d0d3cb;
+}
+
+.requests-list
+  :global(
+    .status-badge--closed
+  ) {
+  color: #969b91;
+}
+
+/* ---------------------------------------------------------
+   UNREAD / ARCHIVE LABEL
+   --------------------------------------------------------- */
+
+.requests-list
+  :global(
+    .request-row__unread-label
+  ) {
+  background:
+    rgba(234, 255, 0, 0.11);
+
+  color:
+    var(--color-accent);
+}
+
+.requests-list
+  :global(
+    .request-row__archive-label
+  ) {
+  border-color:
+    rgba(255, 255, 255, 0.12);
+
+  background:
+    rgba(255, 255, 255, 0.05);
+
+  color: #b0b4ab;
+}
+
+/* ---------------------------------------------------------
+   FOLLOW UP
+   --------------------------------------------------------- */
+
+.requests-list
+  :global(
+    .request-row__follow-up
+  ) {
+  color:
+    var(--color-accent);
+
+  font-weight: 500;
+}
+
+.requests-list
+  :global(
+    .request-row__follow-up--overdue
+  ) {
+  color: #ffae8f;
+}
+
+/* ---------------------------------------------------------
+   EMPTY / LOADING
+   --------------------------------------------------------- */
+
+.requests-loading {
+  color: #a9aea3;
+}
+
+.requests-empty h2 {
+  color: #f0f1ed;
+}
+
+.requests-empty p {
+  color: #a6aaa1;
+}
+
+/* ---------------------------------------------------------
+   DETAIL PANEL
+   --------------------------------------------------------- */
+
+.detail-panel {
+  border-left-color:
+    rgba(255, 255, 255, 0.13);
+
+  background: #10120e;
+}
+
+.detail-panel__header {
+  border-bottom-color:
+    rgba(255, 255, 255, 0.12);
+
+  background: #11130f;
+}
+
+.detail-panel__eyebrow {
+  color: #a6aba0;
+}
+
+.detail-panel__id {
+  color: #868b81;
+}
+
+.detail-panel__read-state {
+  background:
+    rgba(255, 255, 255, 0.06);
+
+  color: #a6aaa1;
+}
+
+.detail-panel__archive-state {
+  border-color:
+    rgba(255, 255, 255, 0.13);
+
+  background:
+    rgba(255, 255, 255, 0.055);
+
+  color: #b4b8af;
+}
+
+/* ---------------------------------------------------------
+   DETAIL PERSON
+   --------------------------------------------------------- */
+
+.detail-panel__content
+  :global(.detail-person h2) {
+  color: #f7f8f4;
+}
+
+.detail-panel__content
+  :global(.detail-person p) {
+  color: #aeb2a8;
+}
+
+.detail-panel__content
+  :global(.detail-meta > span),
+.detail-panel__content
+  :global(.detail-message > span) {
+  color: #959a90;
+}
+
+.detail-panel__content
+  :global(.detail-meta a),
+.detail-panel__content
+  :global(.detail-meta p) {
+  color: #d4d7cf;
+}
+
+.detail-panel__content
+  :global(.detail-message p) {
+  color: #c8cbc3;
+}
+
+/* ---------------------------------------------------------
+   ADMIN NOTE / FOLLOW-UP FIELDS
+   --------------------------------------------------------- */
+
+.detail-panel__content
+  :global(
+    .detail-operation label
+  ) {
+  color: #a5aa9f;
+}
+
+.detail-panel__content
+  :global(
+    .detail-operation textarea
+  ),
+.detail-panel__content
+  :global(
+    .detail-operation input
+  ) {
+  border-color:
+    rgba(255, 255, 255, 0.13);
+
+  background: #0b0d0a;
+
+  color: #f0f1ed;
+}
+
+.detail-panel__content
+  :global(
+    .detail-operation
+    textarea::placeholder
+  ) {
+  color: #777c72;
+}
+
+.detail-panel__content
+  :global(
+    .detail-operation textarea:focus
+  ),
+.detail-panel__content
+  :global(
+    .detail-operation input:focus
+  ) {
+  border-color:
+    rgba(234, 255, 0, 0.48);
+
+  background: #0f110d;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(234, 255, 0, 0.03);
+}
+
+/* ---------------------------------------------------------
+   DETAIL STATUS
+   --------------------------------------------------------- */
+
+.detail-panel__footer {
+  border-top-color:
+    rgba(255, 255, 255, 0.13);
+
+  background:
+    rgba(15, 17, 13, 0.98);
+}
+
+.detail-panel__label {
+  color: #9da298;
+}
+
+.detail-status-options button {
+  border-color:
+    rgba(255, 255, 255, 0.12);
+
+  background: #171914;
+
+  color: #b4b8af;
+}
+
+.detail-status-options button:hover {
+  border-color:
+    rgba(255, 255, 255, 0.2);
+
+  color: #ffffff;
+}
+
+.detail-status-options
+  :global(
+    .detail-status-option--active
+  ) {
+  border-color:
+    rgba(234, 255, 0, 0.4);
+
+  background:
+    rgba(234, 255, 0, 0.075);
+
+  color:
+    var(--color-accent);
+}
+
+.detail-status-message {
+  color: #a0a59a;
+}
+
+/* ---------------------------------------------------------
+   ARCHIVE
+   --------------------------------------------------------- */
+
+.archive-message {
+  color: #969b91;
+}
+
+/* ---------------------------------------------------------
+   FORM BUTTONS
+   --------------------------------------------------------- */
+
+.detail-panel__content
+  :global(
+    .detail-operation__clear
+  ) {
+  border-color:
+    rgba(255, 255, 255, 0.14);
+
+  background:
+    rgba(255, 255, 255, 0.025);
+
+  color: #bcc0b7;
+}
+
+.detail-panel__content
+  :global(
+    .detail-operation__clear:hover
+  ) {
+  border-color:
+    rgba(255, 255, 255, 0.22);
+
+  color: #ffffff;
+}
+
+/* ---------------------------------------------------------
+   MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .stat-card small {
+    color: #a0a59a;
+  }
+
+  .requests-list
+    :global(
+      .request-row__subject
+    ) {
+    color: #c2c5be;
+  }
+}
+</style>
